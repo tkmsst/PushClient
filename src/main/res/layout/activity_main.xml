@@ -20,30 +20,11 @@
                 android:layout_weight="1" />
         </TableRow>
 
-        <TableRow>
-            <TextView android:text="@string/push_act" />
-            <EditText
-                android:id="@+id/pushact"
-                android:scrollHorizontally="true"
-                android:singleLine="true"
-                android:layout_weight="1" />
-        </TableRow>
-
-        <TableRow>
-            <TextView android:text="@string/notif_act" />
-            <EditText
-                android:id="@+id/notifact"
-                android:scrollHorizontally="true"
-                android:singleLine="true"
-                android:layout_weight="1" />
-        </TableRow>
-
         <CheckBox android:id="@+id/launchact"
             android:text="@string/launch_act" />
 
         <CheckBox android:id="@+id/sendnotif"
-            android:text="@string/send_notif"
-            android:singleLine="false" />
+            android:text="@string/send_notif" />
 
         <CheckBox android:id="@+id/screenon"
             android:text="@string/screen_on" />

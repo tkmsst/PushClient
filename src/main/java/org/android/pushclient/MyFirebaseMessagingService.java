@@ -22,6 +22,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.PowerManager;
 import android.provider.Settings;
 import android.support.v4.app.NotificationCompat;
@@ -39,6 +40,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     private static final int RING_DURATION = 20000;
 
     private SharedPreferences prefs;
+    private String pkg_name;
 
     /**
      * Called when message is received.
@@ -75,11 +77,13 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         PowerManager.WakeLock mWakeLock = mPowerManager.newWakeLock(pmFlag, TAG);
         mWakeLock.acquire();
 
+        // Get push parameters.
+        Map<String, String> data = remoteMessage.getData();
+        pkg_name = data.get("app");
+
         // Send a notification.
         if (sendnotif) {
-            Map<String, String> data = remoteMessage.getData();
-            sendNotification(getString(R.string.msg_received, data.get("name"),
-                    data.get("num")));
+            sendNotification(data.get("msg"));
         }
 
         // Start the activity.
@@ -131,16 +135,8 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
      * @param messageBody FCM message body received.
      */
     private void sendNotification(String messageBody) {
-        final String notifact = prefs.getString("notif_act", "");
-        Intent intent = getPushactIntent(0);
-        PendingIntent pendingIntent = null;
-        if (intent != null) {
-            if (!notifact.isEmpty()) {
-                intent.setAction(notifact);
-            }
-            pendingIntent = PendingIntent.getActivity(this, 0, intent,
-                    PendingIntent.FLAG_ONE_SHOT);
-        }
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
+                getPushactIntent(0), PendingIntent.FLAG_ONE_SHOT);
 
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this).
                 setSmallIcon(R.drawable.ic_stat_ic_notification).
@@ -158,14 +154,12 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     }
 
     private Intent getPushactIntent(int flags) {
-        final String pushpak = prefs.getString("push_pak", "");
-        final String pushact = prefs.getString("push_act", "");
-        if (pushact.isEmpty()) {
+        if (pkg_name == null) {
             return null;
         }
 
-        Intent intent = new Intent();
-        intent.setClassName(pushpak, pushact);
+        PackageManager mPackageManager = getPackageManager();
+        Intent intent = mPackageManager.getLaunchIntentForPackage(pkg_name);
         intent.setFlags(flags |
                 Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED |
                 Intent.FLAG_ACTIVITY_NO_HISTORY |

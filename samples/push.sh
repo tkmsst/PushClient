@@ -1,22 +1,18 @@
 #!/bin/sh
 
 APIKEY=Your-API-Key
+APPLICATION=Package-Name
 
-while read line; do
-	if [ -n "$tokens" ]; then
-		tokens=${tokens},\"${line}\"
-	else
-		tokens=\"${line}\"
-	fi
-done < `dirname $0`/push.dat
+DATE=`date '+%m/%d %R'`
+MESSAGE="[$DATE] $1"
 
 cnt=3
-for i in `seq $cnt`; do
-	RESULT=`curl -k --header "Authorization: key=$APIKEY" --header Content-Type:"application/json" https://fcm.googleapis.com/fcm/send -d "{\"registration_ids\":[$tokens],\"collapse_key\":\"pushclient\",\"priority\":\"high\",\"content_available\":true,\"data\":{\"name\":\"$1\",\"num\":\"$2\"}}"`
-	if `echo $RESULT | grep -sq "\"failure\":0"`; then
-		break
-	fi
-	if [ $i -lt $cnt ]; then
+while read token; do
+	for i in `seq $cnt`; do
+		RESULT=`curl -k --header "Authorization: key=$APIKEY" --header Content-Type:"application/json" https://fcm.googleapis.com/fcm/send -d "{\"to\":\"$token\",\"collapse_key\":\"pushclient\",\"priority\":\"high\",\"content_available\":true,\"data\":{\"app\":\"$APPLICATION\",\"msg\":\"$MESSAGE\"}}"`
+		if `echo $RESULT | grep -sq "\"success\":1"` || [ $i -eq $cnt ]; then
+			break
+		fi
 		sleep 1
-	fi
-done
+	done
+done < `dirname $0`/push.dat

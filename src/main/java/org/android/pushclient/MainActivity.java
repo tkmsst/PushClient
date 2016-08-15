@@ -45,11 +45,11 @@ public class MainActivity extends AppCompatActivity {
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
 
     public static TextView mDisplay, mToken;
-    private EditText editText1, editText2, editText3;
+    private EditText editText;
     private CheckBox checkBox1, checkBox2, checkBox3, checkBox4;
     private SharedPreferences prefs;
 
-    private String serverurl, pushact, notifact;
+    private String serverurl;
     private boolean launchact, sendnotif, screenon, endoff;
 
     @Override
@@ -142,24 +142,18 @@ public class MainActivity extends AppCompatActivity {
 
     private void getParameters() {
         serverurl = prefs.getString("server_url", "");
-        pushact   = prefs.getString("push_act", "");
-        notifact  = prefs.getString("notif_act", "");
         launchact = prefs.getBoolean("launch_act", true);
         sendnotif = prefs.getBoolean("send_notif", true);
         screenon  = prefs.getBoolean("screen_on", false);
         endoff    = prefs.getBoolean("end_off", true);
 
-        editText1 = (EditText) findViewById(R.id.serverurl);
-        editText2 = (EditText) findViewById(R.id.pushact);
-        editText3 = (EditText) findViewById(R.id.notifact);
+        editText  = (EditText) findViewById(R.id.serverurl);
         checkBox1 = (CheckBox) findViewById(R.id.launchact);
         checkBox2 = (CheckBox) findViewById(R.id.sendnotif);
         checkBox3 = (CheckBox) findViewById(R.id.screenon);
         checkBox4 = (CheckBox) findViewById(R.id.endoff);
 
-        editText1.setText(serverurl);
-        editText2.setText(pushact);
-        editText3.setText(notifact);
+        editText.setText(serverurl);
         checkBox1.setChecked(launchact);
         checkBox2.setChecked(sendnotif);
         checkBox3.setChecked(screenon);
@@ -167,38 +161,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean setParameters() {
-        serverurl = editText1.getText().toString();
-
-        String pushpak = "";
-        pushact = editText2.getText().toString();
-        if (!pushact.isEmpty()) {
-            Intent intent = new Intent(Intent.ACTION_MAIN, null);
-            intent.addCategory(Intent.CATEGORY_LAUNCHER);
-            PackageManager mPackageManager = this.getPackageManager();
-            List<ResolveInfo> activitylist = mPackageManager.queryIntentActivities(intent, 0);
-            for (ResolveInfo activity : activitylist) {
-                if (pushact.equals(activity.activityInfo.name)) {
-                    pushpak = activity.activityInfo.packageName;
-                    break;
-                } else if (pushact.equals(activity.activityInfo.packageName)) {
-                    pushpak = pushact;
-                    pushact = activity.activityInfo.name;
-                    break;
-                }
-            }
-            if (pushpak.isEmpty()) {
-                mDisplay.setText(getString(R.string.msg_no_activity));
-                return false;
-            }
-        }
-
-        notifact  = editText3.getText().toString();
-        if (!notifact.isEmpty()) {
-            if (notifact.charAt(0) == '.') {
-                notifact = pushpak + notifact;
-            }
-        }
-
+        serverurl = editText.getText().toString();
         launchact = checkBox1.isChecked();
         sendnotif = checkBox2.isChecked();
         screenon  = checkBox3.isChecked();
@@ -206,9 +169,6 @@ public class MainActivity extends AppCompatActivity {
 
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString("server_url", serverurl);
-        editor.putString("push_pak", pushpak);
-        editor.putString("push_act", pushact);
-        editor.putString("notif_act", notifact);
         editor.putBoolean("launch_act", launchact);
         editor.putBoolean("send_notif", sendnotif);
         editor.putBoolean("screen_on", screenon);

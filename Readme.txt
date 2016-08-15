@@ -23,23 +23,12 @@ Set up a server　to send push notifications.
 [Setting]
 
 Server URL :	Registration token を受信するサーバーの URL
-Activity :		プッシュにより起動させるアクティビティ名もしくはパッケージ名
-Action :		プッシュ通知をタップした時に起動するアクション名
-
 Server URL :	Server URL receives Registration token
-Activity :		Activity name or package name to be launched from the push notification
-Action :		Action name to be launched by tapping the notification
 
-
-[Setting example]
-
-<CSipSiple>
-Activity :	com.csipsimple.ui.SipHome
-Action :	com.csipsimple.phone.action.CALLLOG
-
-<Zoiper>
-Activity :	com.zoiper.android.ui.SplashScreen
-Action :	(blank)
+プッシュにより起動させるアプリケーションのパッケージ名はスクリプトファイルに記述
+する。
+A package name of an application to be launched from a push notification should
+be specified in a script file.
 
 
 [Sample file]
