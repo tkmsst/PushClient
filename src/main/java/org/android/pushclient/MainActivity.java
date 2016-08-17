@@ -46,11 +46,11 @@ public class MainActivity extends AppCompatActivity {
 
     public static TextView mDisplay, mToken;
     private EditText editText;
-    private CheckBox checkBox1, checkBox2, checkBox3, checkBox4;
+    private CheckBox checkBox1, checkBox2, checkBox3, checkBox4, checkBox5;
     private SharedPreferences prefs;
 
     private String serverurl;
-    private boolean launchact, sendnotif, screenon, endoff;
+    private boolean launchact, sendnotif, headsup, screenon, endoff;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -144,37 +144,41 @@ public class MainActivity extends AppCompatActivity {
         serverurl = prefs.getString("server_url", "");
         launchact = prefs.getBoolean("launch_act", true);
         sendnotif = prefs.getBoolean("send_notif", true);
+        headsup   = prefs.getBoolean("heads_up", false);
         screenon  = prefs.getBoolean("screen_on", false);
         endoff    = prefs.getBoolean("end_off", true);
 
         editText  = (EditText) findViewById(R.id.serverurl);
         checkBox1 = (CheckBox) findViewById(R.id.launchact);
         checkBox2 = (CheckBox) findViewById(R.id.sendnotif);
-        checkBox3 = (CheckBox) findViewById(R.id.screenon);
-        checkBox4 = (CheckBox) findViewById(R.id.endoff);
+        checkBox3 = (CheckBox) findViewById(R.id.headsup);
+        checkBox4 = (CheckBox) findViewById(R.id.screenon);
+        checkBox5 = (CheckBox) findViewById(R.id.endoff);
 
         editText.setText(serverurl);
         checkBox1.setChecked(launchact);
         checkBox2.setChecked(sendnotif);
-        checkBox3.setChecked(screenon);
-        checkBox4.setChecked(endoff);
+        checkBox3.setChecked(headsup);
+        checkBox4.setChecked(screenon);
+        checkBox5.setChecked(endoff);
     }
 
     private boolean setParameters() {
         serverurl = editText.getText().toString();
         launchact = checkBox1.isChecked();
         sendnotif = checkBox2.isChecked();
-        screenon  = checkBox3.isChecked();
-        endoff    = checkBox4.isChecked();
+        headsup   = checkBox3.isChecked();
+        screenon  = checkBox4.isChecked();
+        endoff    = checkBox5.isChecked();
 
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString("server_url", serverurl);
         editor.putBoolean("launch_act", launchact);
         editor.putBoolean("send_notif", sendnotif);
+        editor.putBoolean("heads_up", headsup);
         editor.putBoolean("screen_on", screenon);
         editor.putBoolean("end_off", endoff);
-        editor.commit();
 
-        return true;
+        return editor.commit();
     }
 }

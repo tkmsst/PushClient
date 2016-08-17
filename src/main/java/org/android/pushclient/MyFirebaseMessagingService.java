@@ -36,8 +36,13 @@ import java.util.Map;
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
     private static final String TAG = "FirebaseMessageService";
+    private static final int OFF_DURATION = 5000;
     private static final int REGISTER_DURATION = 10000;
     private static final int RING_DURATION = 20000;
+    private static final int SHOW_MESSAGES = 6;
+
+    public static int numberMessages = 0;
+    private static String[] receivedMessages = new String[SHOW_MESSAGES];
 
     private SharedPreferences prefs;
     private String pkg_name;
@@ -61,9 +66,9 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         if (endoff && !mPowerManager.isScreenOn()) {
             mScreenTimeout = Settings.System.getInt(getContentResolver(),
                     Settings.System.SCREEN_OFF_TIMEOUT, 0);
-            if (mScreenTimeout != 0) {
+            if (mScreenTimeout > OFF_DURATION) {
                 Settings.System.putInt(getContentResolver(),
-                        Settings.System.SCREEN_OFF_TIMEOUT, 3000);
+                        Settings.System.SCREEN_OFF_TIMEOUT, OFF_DURATION);
             }
         }
 
@@ -90,7 +95,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         boolean isLaunched = false;
         if (launchact) {
             try {
-                Intent intent = getPushactIntent(
+                Intent intent = getPushIntent(
                         Intent.FLAG_ACTIVITY_NO_USER_ACTION |
                         Intent.FLAG_ACTIVITY_NO_ANIMATION |
                         Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
@@ -111,7 +116,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         mWakeLock.release();
 
         // Restore the screen timeout setting.
-        if (mScreenTimeout != 0) {
+        if (mScreenTimeout > OFF_DURATION) {
             if (isLaunched) {
                 try {
                     Thread.sleep(RING_DURATION);
@@ -135,17 +140,46 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
      * @param messageBody FCM message body received.
      */
     private void sendNotification(String messageBody) {
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
-                getPushactIntent(0), PendingIntent.FLAG_ONE_SHOT);
+        // Set a Pendingintent.
+        Intent intent = getPushIntent(0);
+        PendingIntent pendingIntent = null;
+        if (intent != null) {
+            pendingIntent = PendingIntent.getActivity(this,
+                    0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        }
 
-        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this).
-                setSmallIcon(R.drawable.ic_stat_ic_notification).
-                setContentTitle(getString(R.string.app_name)).
-                setContentText(messageBody).
-                setAutoCancel(true).
-                setContentIntent(pendingIntent).
-                setDefaults(Notification.DEFAULT_SOUND |
-                            Notification.DEFAULT_LIGHTS);
+        // Store messages.
+        if (!messageBody.isEmpty()) {
+            if (numberMessages < SHOW_MESSAGES) {
+                receivedMessages[numberMessages] = messageBody;
+            }
+            numberMessages++;
+        }
+
+        // Build a notification.
+        NotificationCompat.InboxStyle inboxStyle = new NotificationCompat.InboxStyle();
+        for (int i = 0; i < min(numberMessages, SHOW_MESSAGES) ; i++) {
+            inboxStyle.addLine(receivedMessages[i]);
+        }
+        int moreMessages = numberMessages - SHOW_MESSAGES;
+        if (moreMessages > 0) {
+           inboxStyle.setSummaryText(getString(R.string.more_msg, moreMessages));
+        }
+
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
+                .setContentTitle(getString(R.string.app_name))
+                .setContentText(messageBody)
+                .setSmallIcon(R.drawable.ic_stat_ic_notification)
+                .setStyle(inboxStyle)
+                .setCategory(Notification.CATEGORY_CALL)
+//                .setAutoCancel(true)
+                .setContentIntent(pendingIntent)
+                .setDeleteIntent(getDeleteIntent())
+                .setDefaults(Notification.DEFAULT_SOUND |
+                             Notification.DEFAULT_LIGHTS);
+        if (prefs.getBoolean("heads_up", false)) {
+            notificationBuilder.setPriority(Notification.PRIORITY_HIGH);
+        }
 
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -153,17 +187,29 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         notificationManager.notify(0 , notificationBuilder.build());
     }
 
-    private Intent getPushactIntent(int flags) {
+    private Intent getPushIntent(int flags) {
         if (pkg_name == null) {
             return null;
         }
 
         PackageManager mPackageManager = getPackageManager();
         Intent intent = mPackageManager.getLaunchIntentForPackage(pkg_name);
-        intent.setFlags(flags |
-                Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED |
-                Intent.FLAG_ACTIVITY_NO_HISTORY |
-                Intent.FLAG_ACTIVITY_NEW_TASK);
+        if (intent != null) {
+            intent.setFlags(flags |
+                    Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED |
+                    Intent.FLAG_ACTIVITY_NO_HISTORY |
+                    Intent.FLAG_ACTIVITY_NEW_TASK);
+        }
         return intent;
+    }
+
+    private PendingIntent getDeleteIntent() {
+        Intent intent = new Intent(this, NotificationReceiver.class);
+        return PendingIntent.getBroadcast(this,
+                0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+    }
+
+    private int min(int a, int b) {
+        return (a < b) ? a : b;
     }
 }

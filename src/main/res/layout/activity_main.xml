@@ -10,27 +10,30 @@
         android:stretchColumns="1">
 
         <TableRow>
-            <TextView android:text="@string/server_url" />
+            <TextView android:text="@string/server_url"/>
             <EditText
                 android:id="@+id/serverurl"
                 android:scrollHorizontally="true"
                 android:singleLine="true"
                 android:inputType="textUri"
                 android:hint="yourserver.com/reg.php"
-                android:layout_weight="1" />
+                android:layout_weight="1"/>
         </TableRow>
 
         <CheckBox android:id="@+id/launchact"
-            android:text="@string/launch_act" />
+            android:text="@string/launch_act"/>
 
         <CheckBox android:id="@+id/sendnotif"
-            android:text="@string/send_notif" />
+            android:text="@string/send_notif"/>
+
+        <CheckBox android:id="@+id/headsup"
+            android:text="@string/heads_up"/>
 
         <CheckBox android:id="@+id/screenon"
-            android:text="@string/screen_on" />
+            android:text="@string/screen_on"/>
 
         <CheckBox android:id="@+id/endoff"
-            android:text="@string/end_off" />
+            android:text="@string/end_off"/>
 
     </TableLayout>
 
@@ -45,7 +48,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:onClick="onClick"
-            android:text="@string/set" />
+            android:text="@string/set"/>
 
         <Button
             android:id="@+id/register"
@@ -53,7 +56,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:onClick="onClick"
-            android:text="@string/register" />
+            android:text="@string/register"/>
 
         <Button
             android:id="@+id/unregister"
@@ -61,7 +64,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:onClick="onClick"
-            android:text="@string/unregister" />
+            android:text="@string/unregister"/>
 
         <Button
             android:id="@+id/clear"
@@ -69,7 +72,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:onClick="onClick"
-            android:text="@string/clear" />
+            android:text="@string/clear"/>
 
     </LinearLayout>
 
@@ -77,25 +80,25 @@
         android:id="@+id/display"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textColor="#0000ff" />
+        android:textColor="#0000ff"/>
 
     <View
         android:layout_width="match_parent"
         android:layout_height="1dip"
         android:layout_marginTop="12dp"
-        android:background="#888888" />
+        android:background="#888888"/>
 
     <TextView
         android:text="Registration token:"
         android:textStyle="bold|italic"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"/>
 
     <TextView
         android:id="@+id/token"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:selectAllOnFocus="true"
-        android:textIsSelectable="true" />
+        android:textIsSelectable="true"/>
 
 </LinearLayout>

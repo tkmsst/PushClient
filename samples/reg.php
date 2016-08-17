@@ -38,17 +38,17 @@
 	}
 	
 	if (isset($_POST['register'])) {
-		if (fwrite($fp, $token . "\n"))
-			echo 'The token is successfully registered.';
-		else
+		if (fwrite($fp, $token . "\n") === FALSE)
 			echo 'Failed to register the token.';
+		else
+			echo 'The token is successfully registered.';
 		fflush($fp);
 	} elseif ($registered) {
 		rewind($fp);
-		if (fwrite($fp, $buf))
-			echo 'The token is successfully unregistered.';
-		else
+		if (fwrite($fp, $buf) === FALSE)
 			echo 'Failed to unregister the token.';
+		else
+			echo 'The token is successfully unregistered.';
 		fflush($fp);
 		ftruncate($fp, ftell($fp));
 	} else
