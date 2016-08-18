@@ -7,7 +7,7 @@ Launch any application from a push notification.
 [Preparation]
 
 下記のリンクに従い google-services.json をダウンロードする。
-Follow the linke below and download a google-services.json file.
+Follow the link below and download a google-services.json file.
 https://firebase.google.com/docs/android/setup
 
 ファイルを PushClient ディレクトリにコピーして Android Studio でコンパイルする。

@@ -1,6 +1,6 @@
 Push Client
 ==========
-**Android push client application to lauch any application from a push notification**
+**Android push client application to launch any application from a push notification**
 
 Sample scripts and configuration files for Asterisk are stored in the 'samples' directory.
 
