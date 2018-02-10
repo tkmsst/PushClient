@@ -9,29 +9,40 @@
         android:stretchColumns="1">
 
         <TableRow>
+
             <TextView android:text="@string/server_url" />
+
             <EditText
-                android:id="@+id/serverurl"
-                android:scrollHorizontally="true"
-                android:singleLine="true"
-                android:inputType="textUri"
+                android:id="@+id/server_url"
+                android:layout_weight="1"
                 android:hint="yourserver.com/reg.php"
-                android:layout_weight="1" />
+                android:inputType="textUri"
+                android:scrollHorizontally="true"
+                android:singleLine="true" />
         </TableRow>
 
-        <CheckBox android:id="@+id/launchact"
-            android:text="@string/launch_act" />
+        <CheckBox
+            android:id="@+id/launch_app"
+            android:text="@string/launch_app" />
 
-        <CheckBox android:id="@+id/sendnotif"
-            android:text="@string/send_notif" />
+        <CheckBox
+            android:id="@+id/notif_msg"
+            android:text="@string/notif_msg" />
 
-        <CheckBox android:id="@+id/headsup"
+        <CheckBox
+            android:id="@+id/notif_sound"
+            android:text="@string/notif_sound" />
+
+        <CheckBox
+            android:id="@+id/heads_up"
             android:text="@string/heads_up" />
 
-        <CheckBox android:id="@+id/screenon"
+        <CheckBox
+            android:id="@+id/screen_on"
             android:text="@string/screen_on" />
 
-        <CheckBox android:id="@+id/endoff"
+        <CheckBox
+            android:id="@+id/end_off"
             android:text="@string/end_off" />
 
     </TableLayout>
@@ -88,10 +99,10 @@
         android:background="#888888" />
 
     <TextView
-        android:text="Registration token:"
-        android:textStyle="bold|italic"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:text="Registration token:"
+        android:textStyle="bold|italic" />
 
     <TextView
         android:id="@+id/token"

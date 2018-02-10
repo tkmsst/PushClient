@@ -1,7 +1,7 @@
 [Overview]
 
 任意のアプリをプッシュにより起動する。
-Launch any application from a push notification.
+Launch any apps from push notifications.
 
 
 [Preparation]
@@ -14,10 +14,10 @@ https://firebase.google.com/docs/android/setup
 Copy the file into PushClient directly and compile with Android Studio.
 
 プッシュにより起動させるアプリをインストールする。
-Install an application to be launched from a push notification.
+Install an app to be launched from a push notification.
 
 プッシュ通知を送信するためのサーバーを設置する。
-Set up a server　to send push notifications.
+Set up a server to send push notifications.
 
 
 [Setting]
@@ -25,9 +25,9 @@ Set up a server　to send push notifications.
 Server URL :	Registration token を受信するサーバーの URL
 Server URL :	Server URL receives Registration token
 
-プッシュにより起動させるアプリケーションのパッケージ名はスクリプトファイルに記述
+プッシュにより起動させるアプリのパッケージ名はスクリプトファイルに記述
 する。
-A package name of an application to be launched from a push notification should
+A package name of an app to be launched from a push notification should
 be specified in a script file.
 
 

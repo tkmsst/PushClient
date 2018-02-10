@@ -19,8 +19,6 @@ package org.android.pushclient;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -36,21 +34,18 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.firebase.iid.FirebaseInstanceId;
 
-import java.io.IOException;
-import java.util.List;
-
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
 
-    public static TextView mDisplay, mToken;
+    private TextView mDisplay, mToken;
     private EditText editText;
-    private CheckBox checkBox1, checkBox2, checkBox3, checkBox4, checkBox5;
+    private CheckBox checkBox1, checkBox2, checkBox3, checkBox4, checkBox5, checkBox6;
     private SharedPreferences prefs;
 
-    private String serverurl;
-    private boolean launchact, sendnotif, headsup, screenon, endoff;
+    private String server_url;
+    private boolean launch_app, notif_msg, notif_sound, heads_up, screen_on, end_off;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -108,6 +103,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onClick(final View view) {
+        ServerAccess serverAccess = new ServerAccess(this);
         if (view == findViewById(R.id.set)) {
             if (setParameters()) {
                 mDisplay.setText(getString(R.string.msg_set));
@@ -116,19 +112,19 @@ public class MainActivity extends AppCompatActivity {
             if (!setParameters()) {
                 return;
             }
-            String serverurl = prefs.getString("server_url", "");
+            String server_url = prefs.getString("server_url", "");
             String token = FirebaseInstanceId.getInstance().getToken();
-            ServerAccess.register(serverurl, token);
+            serverAccess.register(server_url, token, true);
             mToken.setText(token);
         } else if (view == findViewById(R.id.unregister)) {
-            String serverurl = prefs.getString("server_url", "");
+            String server_url = prefs.getString("server_url", "");
             String token = FirebaseInstanceId.getInstance().getToken();
             try {
                 FirebaseInstanceId.getInstance().deleteInstanceId();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 Log.e(TAG, "Failed to unregister.");
             }
-            ServerAccess.unregister(serverurl, token);
+            serverAccess.register(server_url, token, false);
         } else if (view == findViewById(R.id.clear)) {
             mDisplay.setText("");
             mToken.setText("");
@@ -141,43 +137,52 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getParameters() {
-        serverurl = prefs.getString("server_url", "");
-        launchact = prefs.getBoolean("launch_act", true);
-        sendnotif = prefs.getBoolean("send_notif", true);
-        headsup   = prefs.getBoolean("heads_up", false);
-        screenon  = prefs.getBoolean("screen_on", false);
-        endoff    = prefs.getBoolean("end_off", true);
+        server_url  = prefs.getString("server_url", "");
+        launch_app  = prefs.getBoolean("launch_app", true);
+        notif_msg   = prefs.getBoolean("notif_msg", true);
+        notif_sound = prefs.getBoolean("notif_sound", true);
+        heads_up    = prefs.getBoolean("heads_up", false);
+        screen_on   = prefs.getBoolean("screen_on", false);
+        end_off     = prefs.getBoolean("end_off", true);
 
-        editText  = (EditText) findViewById(R.id.serverurl);
-        checkBox1 = (CheckBox) findViewById(R.id.launchact);
-        checkBox2 = (CheckBox) findViewById(R.id.sendnotif);
-        checkBox3 = (CheckBox) findViewById(R.id.headsup);
-        checkBox4 = (CheckBox) findViewById(R.id.screenon);
-        checkBox5 = (CheckBox) findViewById(R.id.endoff);
+        editText  = (EditText) findViewById(R.id.server_url);
+        checkBox1 = (CheckBox) findViewById(R.id.launch_app);
+        checkBox2 = (CheckBox) findViewById(R.id.notif_msg);
+        checkBox3 = (CheckBox) findViewById(R.id.notif_sound);
+        checkBox4 = (CheckBox) findViewById(R.id.heads_up);
+        checkBox5 = (CheckBox) findViewById(R.id.screen_on);
+        checkBox6 = (CheckBox) findViewById(R.id.end_off);
 
-        editText.setText(serverurl);
-        checkBox1.setChecked(launchact);
-        checkBox2.setChecked(sendnotif);
-        checkBox3.setChecked(headsup);
-        checkBox4.setChecked(screenon);
-        checkBox5.setChecked(endoff);
+        editText.setText(server_url);
+        checkBox1.setChecked(launch_app);
+        checkBox2.setChecked(notif_msg);
+        checkBox3.setChecked(notif_sound);
+        checkBox4.setChecked(heads_up);
+        checkBox5.setChecked(screen_on);
+        checkBox6.setChecked(end_off);
     }
 
     private boolean setParameters() {
-        serverurl = editText.getText().toString();
-        launchact = checkBox1.isChecked();
-        sendnotif = checkBox2.isChecked();
-        headsup   = checkBox3.isChecked();
-        screenon  = checkBox4.isChecked();
-        endoff    = checkBox5.isChecked();
+        server_url  = editText.getText().toString();
+        launch_app  = checkBox1.isChecked();
+        notif_msg   = checkBox2.isChecked();
+        notif_sound = checkBox3.isChecked();
+        heads_up    = checkBox4.isChecked();
+        screen_on   = checkBox5.isChecked();
+        end_off     = checkBox6.isChecked();
+
+        if (heads_up) {
+            notif_sound = true;
+        }
 
         SharedPreferences.Editor editor = prefs.edit();
-        editor.putString("server_url", serverurl);
-        editor.putBoolean("launch_act", launchact);
-        editor.putBoolean("send_notif", sendnotif);
-        editor.putBoolean("heads_up", headsup);
-        editor.putBoolean("screen_on", screenon);
-        editor.putBoolean("end_off", endoff);
+        editor.putString("server_url", server_url);
+        editor.putBoolean("launch_app", launch_app);
+        editor.putBoolean("notif_msg", notif_msg);
+        editor.putBoolean("notif_sound", notif_sound);
+        editor.putBoolean("heads_up", heads_up);
+        editor.putBoolean("screen_on", screen_on);
+        editor.putBoolean("end_off", end_off);
 
         return editor.commit();
     }

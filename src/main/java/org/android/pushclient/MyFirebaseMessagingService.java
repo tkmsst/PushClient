@@ -55,18 +55,31 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
         prefs = getSharedPreferences(getString(R.string.pref_file), Context.MODE_PRIVATE);
-        final boolean launchact = prefs.getBoolean("launch_act", true);
-        final boolean sendnotif = prefs.getBoolean("send_notif", true);
-        final boolean screenon = prefs.getBoolean("screen_on", false);
-        final boolean endoff = prefs.getBoolean("end_off", true);
+        final boolean launch_app = prefs.getBoolean("launch_app", true);
+        final boolean send_notif = prefs.getBoolean("send_notif", true);
+        final boolean screen_on = prefs.getBoolean("screen_on", false);
+        final boolean end_off = prefs.getBoolean("end_off", true);
+
+        // Get push parameters.
+        Map<String, String> data = remoteMessage.getData();
+        pkg_name = data.get("app");
+
+        // Send a notification.
+        if (send_notif) {
+            sendNotification(data.get("msg"));
+        }
+
+        if (!launch_app && !screen_on) {
+            return;
+        }
 
         // Set screen off timeout.
-        PowerManager mPowerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
-        int mScreenTimeout = 0;
-        if (endoff && !mPowerManager.isScreenOn()) {
-            mScreenTimeout = Settings.System.getInt(getContentResolver(),
+        int screenTimeout = 0;
+        PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        if (launch_app && end_off && !powerManager.isInteractive()) {
+            screenTimeout = Settings.System.getInt(getContentResolver(),
                     Settings.System.SCREEN_OFF_TIMEOUT, 0);
-            if (mScreenTimeout > OFF_DURATION) {
+            if (screenTimeout > OFF_DURATION) {
                 Settings.System.putInt(getContentResolver(),
                         Settings.System.SCREEN_OFF_TIMEOUT, OFF_DURATION);
             }
@@ -74,58 +87,44 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
         // Acquire a wake lock.
         int pmFlag = PowerManager.ACQUIRE_CAUSES_WAKEUP;
-        if (screenon) {
+        if (screen_on) {
             pmFlag |= PowerManager.FULL_WAKE_LOCK;
         } else {
             pmFlag |= PowerManager.PARTIAL_WAKE_LOCK;
         }
-        PowerManager.WakeLock mWakeLock = mPowerManager.newWakeLock(pmFlag, TAG);
-        mWakeLock.acquire();
-
-        // Get push parameters.
-        Map<String, String> data = remoteMessage.getData();
-        pkg_name = data.get("app");
-
-        // Send a notification.
-        if (sendnotif) {
-            sendNotification(data.get("msg"));
-        }
+        PowerManager.WakeLock wakeLock = powerManager.newWakeLock(pmFlag, TAG);
+        wakeLock.acquire(REGISTER_DURATION);
 
         // Start the activity.
         boolean isLaunched = false;
-        if (launchact) {
-            try {
-                Intent intent = getPushIntent(
-                        Intent.FLAG_ACTIVITY_NO_USER_ACTION |
-                        Intent.FLAG_ACTIVITY_NO_ANIMATION |
-                        Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
-                if (intent != null) {
+        if (launch_app) {
+            Intent intent = getPushIntent(
+                    Intent.FLAG_ACTIVITY_NO_USER_ACTION |
+                            Intent.FLAG_ACTIVITY_NO_ANIMATION |
+                            Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+            if (intent != null) {
+                try {
                     startActivity(intent);
                     isLaunched = true;
-                    // Wait for registration.
-                    Thread.sleep(REGISTER_DURATION);
+                } catch (android.content.ActivityNotFoundException e) {
+                    Log.i(TAG, "Activity not found.");
                 }
-            } catch (android.content.ActivityNotFoundException e) {
-                Log.i(TAG, "Activity not found.");
-            } catch (InterruptedException e) {
-                Log.d(TAG, "Sleep interrupted.");
             }
+        } else {
+            return;
         }
 
-        // Release the wake lock.
-        mWakeLock.release();
-
         // Restore the screen timeout setting.
-        if (mScreenTimeout > OFF_DURATION) {
+        if (screenTimeout > OFF_DURATION) {
             if (isLaunched) {
                 try {
-                    Thread.sleep(RING_DURATION);
+                    Thread.sleep(REGISTER_DURATION + RING_DURATION);
                 } catch (InterruptedException e) {
                     Log.d(TAG, "Sleep interrupted.");
                 }
             }
             Settings.System.putInt(getContentResolver(),
-                    Settings.System.SCREEN_OFF_TIMEOUT, mScreenTimeout);
+                    Settings.System.SCREEN_OFF_TIMEOUT, screenTimeout);
         }
     }
 
@@ -157,7 +156,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         }
 
         // Build a notification.
-        NotificationCompat.InboxStyle inboxStyle = new NotificationCompat.InboxStyle();
+        Notification.InboxStyle inboxStyle = new Notification.InboxStyle();
         for (int i = 0; i < min(numberMessages, SHOW_MESSAGES) ; i++) {
             inboxStyle.addLine(receivedMessages[i]);
         }
@@ -166,7 +165,12 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
            inboxStyle.setSummaryText(getString(R.string.more_msg, moreMessages));
         }
 
-        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
+        int nbFlag = Notification.DEFAULT_LIGHTS;
+        if (prefs.getBoolean("notif_sound", true)) {
+            nbFlag |= Notification.DEFAULT_SOUND;
+        }
+
+        Notification.Builder notificationBuilder = new Notification.Builder(this)
                 .setContentTitle(getString(R.string.app_name))
                 .setContentText(messageBody)
                 .setSmallIcon(R.drawable.ic_stat_ic_notification)
@@ -175,8 +179,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 //                .setAutoCancel(true)
                 .setContentIntent(pendingIntent)
                 .setDeleteIntent(getDeleteIntent())
-                .setDefaults(Notification.DEFAULT_SOUND |
-                             Notification.DEFAULT_LIGHTS);
+                .setDefaults(nbFlag);
         if (prefs.getBoolean("heads_up", false)) {
             notificationBuilder.setPriority(Notification.PRIORITY_HIGH);
         }
@@ -192,8 +195,8 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             return null;
         }
 
-        PackageManager mPackageManager = getPackageManager();
-        Intent intent = mPackageManager.getLaunchIntentForPackage(pkg_name);
+        PackageManager packageManager = getPackageManager();
+        Intent intent = packageManager.getLaunchIntentForPackage(pkg_name);
         if (intent != null) {
             intent.setFlags(flags |
                     Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED |

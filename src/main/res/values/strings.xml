@@ -2,11 +2,12 @@
     <string name="app_name">Push Client</string>
     <string name="pref_file">pushclient</string>
     <string name="server_url">Server URL</string>
-    <string name="launch_act">Launch the activity when a push notification received</string>
-    <string name="send_notif">Notify when a push notification received</string>
-    <string name="heads_up">Display a heads-up notification</string>
-    <string name="screen_on">Turn the screen on when a push notification received</string>
-    <string name="end_off">Turn the screen off after the activity ended</string>
+    <string name="launch_app">Launch the app upon a push notification received</string>
+    <string name="notif_msg">Display notification messages</string>
+    <string name="notif_sound">Play a notification sound</string>
+    <string name="heads_up">Display heads-up notifications</string>
+    <string name="screen_on">Turn the screen on upon a push notification received</string>
+    <string name="end_off">Turn the screen off after the activity ends</string>
     <string name="set">Set</string>
     <string name="register">Register</string>
     <string name="unregister">Unregister</string>

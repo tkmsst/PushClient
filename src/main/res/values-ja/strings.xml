@@ -2,10 +2,11 @@
     <string name="app_name">Push Client</string>
     <string name="pref_file">pushclient</string>
     <string name="server_url">サーバーURL</string>
-    <string name="launch_act">プッシュ受信時にアクティビティを起動する</string>
-    <string name="send_notif">プッシュ受信時に通知する</string>
+    <string name="launch_app">プッシュ通知受信時にアプリを起動する</string>
+    <string name="notif_msg">通知メッセージを表示する</string>
+    <string name="notif_sound">通知音を鳴らす</string>
     <string name="heads_up">ヘッドアップ通知を表示する</string>
-    <string name="screen_on">プッシュ受信時に画面をオンにする</string>
+    <string name="screen_on">プッシュ通知受信時に画面をオンにする</string>
     <string name="end_off">アクティビティ終了後に画面をオフにする</string>
     <string name="set">設定</string>
     <string name="register">登録</string>
