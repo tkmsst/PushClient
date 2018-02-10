@@ -25,12 +25,12 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.PowerManager;
 import android.provider.Settings;
-import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
+import java.util.LinkedList;
 import java.util.Map;
 
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
@@ -39,13 +39,13 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     private static final int OFF_DURATION = 5000;
     private static final int REGISTER_DURATION = 10000;
     private static final int RING_DURATION = 20000;
-    private static final int SHOW_MESSAGES = 6;
+    private static final int MAX_MESSAGES = 6;
 
     public static int numberMessages = 0;
-    private static String[] receivedMessages = new String[SHOW_MESSAGES];
+    public static LinkedList<String> receivedMessages = new LinkedList<>();
 
-    private SharedPreferences prefs;
     private String pkg_name;
+    private SharedPreferences prefs;
 
     /**
      * Called when message is received.
@@ -149,20 +149,21 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
         // Store messages.
         if (!messageBody.isEmpty()) {
-            if (numberMessages < SHOW_MESSAGES) {
-                receivedMessages[numberMessages] = messageBody;
+            if (receivedMessages.size() == MAX_MESSAGES) {
+                receivedMessages.remove();
             }
+            receivedMessages.add(messageBody);
             numberMessages++;
         }
 
         // Build a notification.
         Notification.InboxStyle inboxStyle = new Notification.InboxStyle();
-        for (int i = 0; i < min(numberMessages, SHOW_MESSAGES) ; i++) {
-            inboxStyle.addLine(receivedMessages[i]);
+        for (String s : receivedMessages) {
+            inboxStyle.addLine(s);
         }
-        int moreMessages = numberMessages - SHOW_MESSAGES;
+        int moreMessages = numberMessages - MAX_MESSAGES;
         if (moreMessages > 0) {
-           inboxStyle.setSummaryText(getString(R.string.more_msg, moreMessages));
+            inboxStyle.setSummaryText(getString(R.string.more_msg, moreMessages));
         }
 
         int nbFlag = Notification.DEFAULT_LIGHTS;
@@ -187,7 +188,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-        notificationManager.notify(0 , notificationBuilder.build());
+        notificationManager.notify(0, notificationBuilder.build());
     }
 
     private Intent getPushIntent(int flags) {
@@ -210,9 +211,5 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         Intent intent = new Intent(this, NotificationReceiver.class);
         return PendingIntent.getBroadcast(this,
                 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
-    }
-
-    private int min(int a, int b) {
-        return (a < b) ? a : b;
     }
 }

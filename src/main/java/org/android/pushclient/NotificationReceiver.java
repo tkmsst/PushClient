@@ -12,6 +12,7 @@ public class NotificationReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
+        MyFirebaseMessagingService.receivedMessages.clear();
         MyFirebaseMessagingService.numberMessages = 0;
     }
 }

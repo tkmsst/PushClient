@@ -39,13 +39,12 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
 
+    private boolean launch_app, notif_msg, notif_sound, heads_up, screen_on, end_off;
+    private String server_url;
     private TextView mDisplay, mToken;
     private EditText editText;
     private CheckBox checkBox1, checkBox2, checkBox3, checkBox4, checkBox5, checkBox6;
     private SharedPreferences prefs;
-
-    private String server_url;
-    private boolean launch_app, notif_msg, notif_sound, heads_up, screen_on, end_off;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
