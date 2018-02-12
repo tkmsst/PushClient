@@ -58,6 +58,21 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         notif_sound = prefs.getBoolean("notif_sound", true);
         heads_up    = prefs.getBoolean("heads_up", false);
 
+        // Get push parameters.
+        Map<String, String> data = remoteMessage.getData();
+
+        // Get the app intent.
+        Intent intent = getAppIntent(data.get("app"));
+
+        // Send a notification.
+        if (notif_msg || notif_sound || heads_up) {
+            sendNotification(data.get("msg"), intent);
+        }
+
+        if (!launch_app && !screen_on) {
+            return;
+        }
+
         // Acquire a wake lock.
         PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
         int pmFlag = PowerManager.ACQUIRE_CAUSES_WAKEUP;
@@ -68,17 +83,6 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         }
         PowerManager.WakeLock wakeLock = powerManager.newWakeLock(pmFlag, TAG);
         wakeLock.acquire(LAUNCH_DURATION);
-
-        // Get push parameters.
-        Map<String, String> data = remoteMessage.getData();
-
-        // Get the app intent.
-        Intent intent = getPushIntent(data.get("app"));
-
-        // Send a notification.
-        if (notif_msg || notif_sound || heads_up) {
-            sendNotification(data.get("msg"), intent);
-        }
 
         if (!launch_app) {
             return;
@@ -179,7 +183,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         notificationManager.notify(0, notificationBuilder.build());
     }
 
-    private Intent getPushIntent(String pkg_name) {
+    private Intent getAppIntent(String pkg_name) {
         if (pkg_name == null) {
             return null;
         }
