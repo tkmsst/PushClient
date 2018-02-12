@@ -1,5 +1,5 @@
 /**
- * Server access for registration tokens.
+ * ServerAccess to register token.
  */
 
 package org.android.pushclient;

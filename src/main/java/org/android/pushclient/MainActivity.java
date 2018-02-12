@@ -1,17 +1,5 @@
-/*
- * Copyright 2013 Google Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+/**
+ * Main activity.
  */
 
 package org.android.pushclient;
@@ -169,10 +157,6 @@ public class MainActivity extends AppCompatActivity {
         heads_up    = checkBox4.isChecked();
         screen_on   = checkBox5.isChecked();
         end_off     = checkBox6.isChecked();
-
-        if (heads_up) {
-            notif_sound = true;
-        }
 
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString("server_url", server_url);
