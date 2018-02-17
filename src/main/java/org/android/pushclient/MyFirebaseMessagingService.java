@@ -73,23 +73,9 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             return;
         }
 
-        // Acquire a wake lock.
-        PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
-        int pmFlag = PowerManager.ACQUIRE_CAUSES_WAKEUP;
-        if (screen_on) {
-            pmFlag |= PowerManager.FULL_WAKE_LOCK;
-        } else {
-            pmFlag |= PowerManager.PARTIAL_WAKE_LOCK;
-        }
-        PowerManager.WakeLock wakeLock = powerManager.newWakeLock(pmFlag, TAG);
-        wakeLock.acquire(LAUNCH_DURATION);
-
-        if (!launch_app) {
-            return;
-        }
-
         // Set screen off timeout.
         int screenTimeout = 0;
+        PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
         if (end_off && !powerManager.isInteractive()) {
             screenTimeout = Settings.System.getInt(getContentResolver(),
                     Settings.System.SCREEN_OFF_TIMEOUT, 0);
@@ -99,8 +85,18 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             }
         }
 
+        // Acquire a wake lock.
+        int pmFlag = PowerManager.ACQUIRE_CAUSES_WAKEUP;
+        if (screen_on) {
+            pmFlag |= PowerManager.FULL_WAKE_LOCK;
+        } else {
+            pmFlag |= PowerManager.PARTIAL_WAKE_LOCK;
+        }
+        PowerManager.WakeLock wakeLock = powerManager.newWakeLock(pmFlag, TAG);
+        wakeLock.acquire(LAUNCH_DURATION);
+
         // Start the activity.
-        if (intent != null) {
+        if (launch_app && intent != null) {
             intent.setFlags(
                     Intent.FLAG_ACTIVITY_NO_USER_ACTION |
                     Intent.FLAG_ACTIVITY_NO_ANIMATION |
