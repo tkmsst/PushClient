@@ -97,10 +97,10 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
         // Start the activity.
         if (launch_app && intent != null) {
-            intent.setFlags(
-                    Intent.FLAG_ACTIVITY_NO_USER_ACTION |
+            intent.addFlags(
+                    Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS |
                     Intent.FLAG_ACTIVITY_NO_ANIMATION |
-                    Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+                    Intent.FLAG_ACTIVITY_NO_USER_ACTION);
             try {
                 startActivity(intent);
             } catch (android.content.ActivityNotFoundException e) {
@@ -188,9 +188,9 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         Intent intent = packageManager.getLaunchIntentForPackage(pkg_name);
         if (intent != null) {
             intent.setFlags(
-                    Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED |
+                    Intent.FLAG_ACTIVITY_NEW_TASK |
                     Intent.FLAG_ACTIVITY_NO_HISTORY |
-                    Intent.FLAG_ACTIVITY_NEW_TASK);
+                    Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
         }
         return intent;
     }
