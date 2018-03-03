@@ -109,6 +109,7 @@ public class ServerAccess {
 
             // Modify the activity's UI.
             TextView textView = activity.findViewById(R.id.display);
-            textView.setText(message);        }
+            textView.setText(message);
+        }
     }
 }
