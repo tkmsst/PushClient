@@ -22,6 +22,7 @@ import android.util.Log;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
@@ -66,7 +67,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
         // Send a notification.
         if (notif_msg || notif_sound || heads_up) {
-            sendNotification(data.get("msg"), intent);
+            sendNotification(data, intent);
         }
 
         if (!launch_app && !screen_on) {
@@ -116,15 +117,22 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
     @Override
     public void onDeletedMessages() {
-        sendNotification(getString(R.string.msg_deleted), null);
+        Map<String, String> data = new HashMap<String, String>();
+        data.put("title", getString(R.string.app_name));
+        data.put("msg", getString(R.string.msg_deleted));
+        sendNotification(data, null);
     }
 
     /**
      * Create and show a simple notification containing the received FCM message.
      *
-     * @param messageBody FCM message body received.
+     * @param data FCM data object received.
      */
-    private void sendNotification(String messageBody, Intent intent) {
+    private void sendNotification(Map<String, String> data, Intent intent) {
+    	// Set title and message.
+    	String title = data.get("title");
+    	String message = data.get("msg");
+    	
         // Set defaults.
         int defaultsFlag = Notification.DEFAULT_LIGHTS;
         if (notif_sound) {
@@ -133,19 +141,23 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
         // Build a notification.
         Notification.Builder notificationBuilder = new Notification.Builder(this)
-                .setContentTitle(getString(R.string.app_name))
                 .setSmallIcon(R.drawable.ic_stat_ic_notification)
                 .setCategory(Notification.CATEGORY_CALL)
                 .setDeleteIntent(getDeleteIntent())
                 .setDefaults(defaultsFlag);
 
+        // Set notification title.
+    	if (title != null) {
+            notificationBuilder.setContentTitle(title);
+        }
+
         // Set notification messages.
-        if (notif_msg) {
-            if (!messageBody.isEmpty()) {
+        if (notif_msg && message != null) {
+            if (!message.isEmpty()) {
                 if (receivedMessages.size() == MAX_MESSAGES) {
                     receivedMessages.remove();
                 }
-                receivedMessages.add(messageBody);
+                receivedMessages.add(message);
                 numberMessages++;
             }
             Notification.InboxStyle inboxStyle = new Notification.InboxStyle();
@@ -157,7 +169,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 inboxStyle.setSummaryText(getString(R.string.more_msg, moreMessages));
             }
             notificationBuilder
-                    .setContentText(messageBody)
+                    .setContentText(message)
                     .setStyle(inboxStyle);
         }
 
