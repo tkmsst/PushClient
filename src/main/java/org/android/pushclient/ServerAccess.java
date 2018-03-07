@@ -24,7 +24,7 @@ public class ServerAccess {
     }
 
     public void register(String server_url, String token, boolean reg) {
-        if (!server_url.isEmpty()) {
+        if (server_url != null && token != null) {
             String body;
             if (reg) {
                 body = "register=";
@@ -47,7 +47,7 @@ public class ServerAccess {
 
         @Override
         protected String doInBackground(String... params) {
-            String message = "";
+            String message;
             String endpoint = params[0];
             if (!endpoint.startsWith(PROTOCOL)) {
                 endpoint = PROTOCOL + "://" + endpoint;
@@ -70,8 +70,6 @@ public class ServerAccess {
                 con.setUseCaches(false);
                 con.setFixedLengthStreamingMode(bodyByte.length);
                 con.setRequestMethod("POST");
-                con.setRequestProperty("Content-Type",
-                        "application/x-www-form-urlencoded;charset=UTF-8");
                 // Post the request.
                 OutputStream out = con.getOutputStream();
                 out.write(bodyByte);
@@ -84,6 +82,8 @@ public class ServerAccess {
                     byte response[] = new byte[1024];
                     if (in.read(response) > 0) {
                         message = new String(response, "UTF-8");
+                    } else {
+                        message = "No response from the server.";
                     }
                     in.close();
                 } else {

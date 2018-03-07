@@ -30,7 +30,7 @@ public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
         String refreshedToken = FirebaseInstanceId.getInstance().getToken();
         Log.d(TAG, "Refreshed token: " + refreshedToken);
 
-        // Persist token to third-party servers.
+        // Persist or remove token at third-party servers.
         new ServerAccess(null).register(server_url, refreshedToken, true);
     }
 }

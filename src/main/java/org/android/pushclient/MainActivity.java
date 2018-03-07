@@ -90,32 +90,37 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onClick(final View view) {
+        SharedPreferences.Editor editor = prefs.edit();
         ServerAccess serverAccess = new ServerAccess(this);
         if (view == findViewById(R.id.set)) {
             if (setParameters()) {
                 mDisplay.setText(getString(R.string.msg_set));
             }
         } else if (view == findViewById(R.id.register)) {
-            if (!setParameters()) {
-                return;
+            if (setParameters()) {
+                String token = FirebaseInstanceId.getInstance().getToken();
+                if (token != null) {
+                    serverAccess.register(server_url, token, true);
+                    editor.putString("regid", token);
+                    mToken.setText(token);
+                }
             }
-            String server_url = prefs.getString("server_url", "");
-            String token = FirebaseInstanceId.getInstance().getToken();
-            serverAccess.register(server_url, token, true);
-            mToken.setText(token);
         } else if (view == findViewById(R.id.unregister)) {
-            String server_url = prefs.getString("server_url", "");
-            String token = FirebaseInstanceId.getInstance().getToken();
             try {
                 FirebaseInstanceId.getInstance().deleteInstanceId();
             } catch (Exception e) {
                 Log.e(TAG, "Failed to unregister.");
             }
-            serverAccess.register(server_url, token, false);
+            String token = prefs.getString("regid", null);
+            if (token != null) {
+                serverAccess.register(server_url, token, false);
+                editor.putString("regid", null);
+            }
         } else if (view == findViewById(R.id.clear)) {
             mDisplay.setText("");
             mToken.setText("");
         }
+        editor.apply();
     }
 
     @Override
@@ -124,7 +129,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getParameters() {
-        server_url  = prefs.getString("server_url", "");
+        server_url  = prefs.getString("server_url", null);
         launch_app  = prefs.getBoolean("launch_app", true);
         notif_msg   = prefs.getBoolean("notif_msg", true);
         notif_sound = prefs.getBoolean("notif_sound", true);
