@@ -24,16 +24,17 @@ public class ServerAccess {
     }
 
     public void register(String server_url, String token, boolean reg) {
-        if (server_url != null && token != null) {
-            String body;
-            if (reg) {
-                body = "register=";
-            } else {
-                body = "unregister=";
-            }
-            body += token;
-            new AsyncPost(mainActivity).execute(server_url, body);
+        if (server_url == null || token == null) {
+        	return ;
         }
+        String body;
+        if (reg) {
+            body = "register=";
+        } else {
+            body = "unregister=";
+        }
+        body += token;
+        new AsyncPost(mainActivity).execute(server_url, body);
     }
 
     private static class AsyncPost extends AsyncTask<String, Void, String> {
