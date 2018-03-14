@@ -115,6 +115,8 @@ public class MainActivity extends AppCompatActivity {
             if (token != null) {
                 serverAccess.register(server_url, token, false);
                 editor.putString("regid", null);
+            } else {
+                mDisplay.setText(getString(R.string.token_deleted));
             }
         } else if (view == findViewById(R.id.clear)) {
             mDisplay.setText("");

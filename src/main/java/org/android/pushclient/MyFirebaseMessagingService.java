@@ -28,14 +28,14 @@ import java.util.Map;
 
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
-    public static int numberMessages = 0;
+    public static int messageCounter = 0;
     public static LinkedList<String> receivedMessages = new LinkedList<>();
 
     private static final String TAG = "FirebaseMessageService";
     private static final int TIMEOUT_PERIOD = 10000;
     private static final int LAUNCH_DURATION = 15000;
     private static final int MAX_DELAY= 30000;
-    private static final int MAX_MESSAGES = 6;
+    private static final int MAX_MESSAGES = 5;
 
     private boolean notif_msg = true;
     private boolean notif_sound = true;
@@ -129,10 +129,10 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
      * @param data FCM data object received.
      */
     private void sendNotification(Map<String, String> data, Intent intent) {
-    	// Set title and message.
-    	String title = data.get("title");
-    	String message = data.get("msg");
-    	
+        // Set title and message.
+        String title = data.get("title");
+        String message = data.get("msg");
+
         // Set defaults.
         int defaultsFlag = Notification.DEFAULT_LIGHTS;
         if (notif_sound) {
@@ -147,30 +147,30 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 .setDefaults(defaultsFlag);
 
         // Set notification title.
-    	if (title != null) {
+        if (title != null) {
             notificationBuilder.setContentTitle(title);
         }
 
         // Set notification messages.
         if (notif_msg && message != null) {
             if (!message.isEmpty()) {
+                notificationBuilder.setContentText(message);
                 if (receivedMessages.size() == MAX_MESSAGES) {
                     receivedMessages.remove();
+                    messageCounter++;
                 }
                 receivedMessages.add(message);
-                numberMessages++;
             }
-            Notification.InboxStyle inboxStyle = new Notification.InboxStyle();
-            for (String s : receivedMessages) {
-                inboxStyle.addLine(s);
+            if (receivedMessages.size() > 0) {
+                Notification.InboxStyle inboxStyle = new Notification.InboxStyle();
+                for (String s : receivedMessages) {
+                    inboxStyle.addLine(s);
+                }
+                if (messageCounter > 0) {
+                    inboxStyle.setSummaryText(getString(R.string.more_msg, messageCounter));
+                }
+                notificationBuilder.setStyle(inboxStyle);
             }
-            int moreMessages = numberMessages - MAX_MESSAGES;
-            if (moreMessages > 0) {
-                inboxStyle.setSummaryText(getString(R.string.more_msg, moreMessages));
-            }
-            notificationBuilder
-                    .setContentText(message)
-                    .setStyle(inboxStyle);
         }
 
         // Set the heads-up notification.

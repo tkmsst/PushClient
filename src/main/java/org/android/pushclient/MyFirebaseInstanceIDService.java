@@ -24,13 +24,21 @@ public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
     public void onTokenRefresh() {
         final SharedPreferences prefs = getSharedPreferences(getString(R.string.pref_file),
                 Context.MODE_PRIVATE);
-        String server_url = prefs.getString("server_url", "");
+        String server_url = prefs.getString("server_url", null);
+        String regid = prefs.getString("regid", null);
 
         // Get updated InstanceID token.
         String refreshedToken = FirebaseInstanceId.getInstance().getToken();
+        if (refreshedToken == null) {
+            return;
+        }
         Log.d(TAG, "Refreshed token: " + refreshedToken);
 
         // Persist or remove token at third-party servers.
+        new ServerAccess(null).register(server_url, regid, false);
         new ServerAccess(null).register(server_url, refreshedToken, true);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("regid", refreshedToken);
+        editor.apply();
     }
 }

@@ -13,6 +13,7 @@
     <string name="unregister">削除</string>
     <string name="clear">クリア</string>
     <string name="msg_set">パラメータを設定しました。</string>
+    <string name="token_deleted">トークンは削除されています。</string>
     <string name="msg_deleted">サーバーのメッセージを削除しました。</string>
     <string name="more_msg">+%1$d個の通知</string>
 </resources>

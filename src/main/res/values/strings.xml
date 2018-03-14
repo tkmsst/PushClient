@@ -13,6 +13,7 @@
     <string name="unregister">Unregister</string>
     <string name="clear">Clear</string>
     <string name="msg_set">Set parameters.</string>
+    <string name="token_deleted">The token has been deleted.</string>
     <string name="msg_deleted">Deleted messages on the server.</string>
     <string name="more_msg">+%1$d more</string>
 </resources>

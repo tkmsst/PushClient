@@ -1,7 +1,7 @@
 #!/bin/sh
 
 APPLICATION=App-Package-Name
-TITLE="Notification title"
+TITLE="Push Client"
 
 DATE=`date '+%m/%d %R'`
 MESSAGE="[$DATE] $1 <$2>"
