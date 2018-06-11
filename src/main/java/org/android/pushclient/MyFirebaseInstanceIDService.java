@@ -4,8 +4,6 @@
 
 package org.android.pushclient;;
 
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.util.Log;
 
 import com.google.firebase.iid.FirebaseInstanceId;
@@ -22,10 +20,9 @@ public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
      */
     @Override
     public void onTokenRefresh() {
-        final SharedPreferences prefs = getSharedPreferences(getString(R.string.pref_file),
-                Context.MODE_PRIVATE);
-        String server_url = prefs.getString("server_url", null);
-        String regid = prefs.getString("regid", null);
+        MyApplication myApplication = (MyApplication) getApplicationContext();
+        String server_url = myApplication.manageServerUrl(null);
+        String regid = myApplication.manageRegid(null);
 
         // Get updated InstanceID token.
         String refreshedToken = FirebaseInstanceId.getInstance().getToken();
@@ -37,8 +34,6 @@ public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
         // Persist or remove token at third-party servers.
         new ServerAccess(null).register(server_url, regid, false);
         new ServerAccess(null).register(server_url, refreshedToken, true);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putString("regid", refreshedToken);
-        editor.apply();
+        myApplication.manageRegid(refreshedToken);
     }
 }

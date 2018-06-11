@@ -4,9 +4,7 @@
 
 package org.android.pushclient;
 
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -27,12 +25,11 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
 
-    private boolean launch_app, notif_msg, notif_sound, heads_up, screen_on, end_off;
-    private String server_url;
     private TextView mDisplay, mToken;
     private EditText editText;
     private CheckBox checkBox1, checkBox2, checkBox3, checkBox4, checkBox5, checkBox6;
-    private SharedPreferences prefs;
+
+    private MyApplication myApplication;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -48,10 +45,7 @@ public class MainActivity extends AppCompatActivity {
         // Grant WRITE_SETTINGS permission.
         setSystemWritePermission();
 
-        mDisplay = (TextView) findViewById(R.id.display);
-        mToken = (TextView) findViewById(R.id.token);
-        prefs = getSharedPreferences(getString(R.string.pref_file), Context.MODE_PRIVATE);
-
+        myApplication = (MyApplication) getApplicationContext();
         getParameters();
     }
 
@@ -90,7 +84,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onClick(final View view) {
-        SharedPreferences.Editor editor = prefs.edit();
         ServerAccess serverAccess = new ServerAccess(this);
         if (view == findViewById(R.id.set)) {
             if (setParameters()) {
@@ -100,8 +93,9 @@ public class MainActivity extends AppCompatActivity {
             if (setParameters()) {
                 String token = FirebaseInstanceId.getInstance().getToken();
                 if (token != null) {
-                    serverAccess.register(server_url, token, true);
-                    editor.putString("regid", token);
+                    serverAccess.register(
+                            myApplication.manageServerUrl(null), token, true);
+                    myApplication.manageRegid(token);
                     mToken.setText(token);
                 }
             }
@@ -111,10 +105,11 @@ public class MainActivity extends AppCompatActivity {
             } catch (Exception e) {
                 Log.e(TAG, "Failed to unregister.");
             }
-            String token = prefs.getString("regid", null);
-            if (token != null) {
-                serverAccess.register(server_url, token, false);
-                editor.putString("regid", null);
+            String regid = myApplication.manageRegid(null);
+            if (!regid.isEmpty()) {
+                serverAccess.register(
+                        myApplication.manageServerUrl(null), regid, false);
+                myApplication.manageRegid("");
             } else {
                 mDisplay.setText(getString(R.string.token_deleted));
             }
@@ -122,7 +117,6 @@ public class MainActivity extends AppCompatActivity {
             mDisplay.setText("");
             mToken.setText("");
         }
-        editor.apply();
     }
 
     @Override
@@ -131,13 +125,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getParameters() {
-        server_url  = prefs.getString("server_url", null);
-        launch_app  = prefs.getBoolean("launch_app", true);
-        notif_msg   = prefs.getBoolean("notif_msg", true);
-        notif_sound = prefs.getBoolean("notif_sound", true);
-        heads_up    = prefs.getBoolean("heads_up", false);
-        screen_on   = prefs.getBoolean("screen_on", false);
-        end_off     = prefs.getBoolean("end_off", true);
+        mDisplay = (TextView) findViewById(R.id.display);
+        mToken   = (TextView) findViewById(R.id.token);
 
         editText  = (EditText) findViewById(R.id.server_url);
         checkBox1 = (CheckBox) findViewById(R.id.launch_app);
@@ -147,33 +136,24 @@ public class MainActivity extends AppCompatActivity {
         checkBox5 = (CheckBox) findViewById(R.id.screen_on);
         checkBox6 = (CheckBox) findViewById(R.id.end_off);
 
-        editText.setText(server_url);
-        checkBox1.setChecked(launch_app);
-        checkBox2.setChecked(notif_msg);
-        checkBox3.setChecked(notif_sound);
-        checkBox4.setChecked(heads_up);
-        checkBox5.setChecked(screen_on);
-        checkBox6.setChecked(end_off);
+        editText.setText(myApplication.manageServerUrl(null));
+        checkBox1.setChecked(myApplication.get("launch_app"));
+        checkBox2.setChecked(myApplication.get("notif_msg"));
+        checkBox3.setChecked(myApplication.get("notif_sound"));
+        checkBox4.setChecked(myApplication.get("heads_up"));
+        checkBox5.setChecked(myApplication.get("screen_on"));
+        checkBox6.setChecked(myApplication.get("end_off"));
     }
 
     private boolean setParameters() {
-        server_url  = editText.getText().toString();
-        launch_app  = checkBox1.isChecked();
-        notif_msg   = checkBox2.isChecked();
-        notif_sound = checkBox3.isChecked();
-        heads_up    = checkBox4.isChecked();
-        screen_on   = checkBox5.isChecked();
-        end_off     = checkBox6.isChecked();
+        myApplication.manageServerUrl(editText.getText().toString());
+        myApplication.put("launch_app", checkBox1.isChecked());
+        myApplication.put("notif_msg", checkBox2.isChecked());
+        myApplication.put("notif_sound", checkBox3.isChecked());
+        myApplication.put("heads_up", checkBox4.isChecked());
+        myApplication.put("screen_on", checkBox5.isChecked());
+        myApplication.put("end_off", checkBox6.isChecked());
 
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putString("server_url", server_url);
-        editor.putBoolean("launch_app", launch_app);
-        editor.putBoolean("notif_msg", notif_msg);
-        editor.putBoolean("notif_sound", notif_sound);
-        editor.putBoolean("heads_up", heads_up);
-        editor.putBoolean("screen_on", screen_on);
-        editor.putBoolean("end_off", end_off);
-
-        return editor.commit();
+        return myApplication.storeAll();
     }
 }

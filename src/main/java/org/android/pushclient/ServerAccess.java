@@ -25,9 +25,9 @@ public class ServerAccess {
 
     public void register(String server_url, String token, boolean reg) {
         if (server_url == null || token == null) {
-            return ;
-        } else if (server_url.isEmpty() || token.isEmpty()) {
             return;
+        } else if (server_url.isEmpty() || token.isEmpty()) {
+            return ;
         }
         String body;
         if (reg) {

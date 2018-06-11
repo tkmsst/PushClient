@@ -23,13 +23,10 @@ import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.Map;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
-
-    public static int messageCounter = 0;
-    public static LinkedList<String> receivedMessages = new LinkedList<>();
 
     private static final String TAG = "FirebaseMessageService";
     private static final int TIMEOUT_PERIOD = 10000;
@@ -41,6 +38,8 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     private boolean notif_sound = true;
     private boolean heads_up =false;
 
+    private MyApplication myApplication;
+
     /**
      * Called when message is received.
      *
@@ -49,15 +48,14 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
         // Set variables.
-        final SharedPreferences prefs = getSharedPreferences(
-                getString(R.string.pref_file),Context.MODE_PRIVATE);
-        final boolean launch_app = prefs.getBoolean("launch_app", true);
-        final boolean screen_on  = prefs.getBoolean("screen_on", false);
-        final boolean end_off    = prefs.getBoolean("end_off", true);
+        myApplication = (MyApplication) getApplicationContext();
+        final boolean launch_app = myApplication.get("launch_app");
+        final boolean screen_on  = myApplication.get("screen_on");
+        final boolean end_off    = myApplication.get("end_off");
 
-        notif_msg   = prefs.getBoolean("notif_msg", true);
-        notif_sound = prefs.getBoolean("notif_sound", true);
-        heads_up    = prefs.getBoolean("heads_up", false);
+        notif_msg   = myApplication.get("notif_msg");
+        notif_sound = myApplication.get("notif_sound");
+        heads_up    = myApplication.get("heads_up");
 
         // Get push parameters.
         Map<String, String> data = remoteMessage.getData();
@@ -153,19 +151,21 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
         // Set notification messages.
         if (notif_msg && message != null) {
+            ConcurrentLinkedQueue<String> messageQueue = myApplication.getQueue();
             if (!message.isEmpty()) {
                 notificationBuilder.setContentText(message);
-                if (receivedMessages.size() == MAX_MESSAGES) {
-                    receivedMessages.remove();
-                    messageCounter++;
+                if (messageQueue.size() == MAX_MESSAGES) {
+                    messageQueue.remove();
+                    myApplication.incrementCounter();
                 }
-                receivedMessages.add(message);
+                messageQueue.add(message);
             }
-            if (receivedMessages.size() > 0) {
+            if (messageQueue.size() > 0) {
                 Notification.InboxStyle inboxStyle = new Notification.InboxStyle();
-                for (String s : receivedMessages) {
+                for (String s : messageQueue) {
                     inboxStyle.addLine(s);
                 }
+                int messageCounter = myApplication.getCounter();
                 if (messageCounter > 0) {
                     inboxStyle.setSummaryText(getString(R.string.more_msg, messageCounter));
                 }
