@@ -1,11 +1,19 @@
 buildscript {
     repositories {
+        mavenLocal()
         jcenter()
+        google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.0.1'
-        classpath 'com.google.gms:google-services:3.2.0'
+        classpath 'com.android.tools.build:gradle:3.1.4'
+        classpath 'com.google.gms:google-services:4.0.2'
     }
+}
+
+repositories {
+    mavenLocal()
+    jcenter()
+    google()
 }
 
 apply plugin: 'com.android.application'
@@ -16,7 +24,7 @@ android {
     defaultConfig {
         applicationId "org.android.pushclient"
         minSdkVersion 21
-        targetSdkVersion 21
+        targetSdkVersion 25
         versionCode 1
         versionName "1.0"
     }
@@ -27,24 +35,13 @@ android {
             zipAlignEnabled true
         }
     }
-    packagingOptions {
-        exclude 'error_prone/Annotations.gwt.xml'
-        exclude 'jsr305_annotations/Jsr305_annotations.gwt.xml'
-        exclude 'third_party/java_src/error_prone/project/annotations/Annotations.gwt.xml'
-        exclude 'third_party/java_src/error_prone/project/annotations/Google_internal.gwt.xml'
-        exclude 'build-data.properties'
-    }
-}
-
-repositories {
-    google()
 }
 
 dependencies {
-    compile 'com.android.support:appcompat-v7:27.0.2'
-    compile 'com.android.support:support-v4:27.0.2'
-    compile 'com.google.android.gms:play-services-base:11.8.0'
-    compile 'com.google.firebase:firebase-messaging:11.8.0'
+    implementation 'com.android.support:appcompat-v7:27.1.1'
+    implementation 'com.android.support:support-v4:27.1.1'
+    implementation 'com.google.firebase:firebase-core:16.0.1'
+    implementation 'com.google.firebase:firebase-messaging:17.1.0'
 }
 
 apply plugin: 'com.google.gms.google-services'

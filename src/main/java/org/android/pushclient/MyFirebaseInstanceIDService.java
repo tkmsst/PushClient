@@ -2,7 +2,7 @@
  * FirebaseInstanceIdService called when token is updated.
  */
 
-package org.android.pushclient;;
+package org.android.pushclient;
 
 import android.util.Log;
 
