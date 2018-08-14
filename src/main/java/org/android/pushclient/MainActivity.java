@@ -16,14 +16,13 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.iid.InstanceIdResult;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
-    private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
 
     private TextView mDisplay, mToken;
     private EditText editText;
@@ -36,12 +35,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Check device for Play Services APK. If check succeeds, proceed with GCM registration.
-        if (!checkPlayServices()) {
-            Log.i(TAG, "No valid Google Play Services APK found.");
-            finish();
-        }
-
         // Grant WRITE_SETTINGS permission.
         setSystemWritePermission();
 
@@ -52,24 +45,56 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // Check device for Play Services APK.
-        checkPlayServices();
+        // Grant WRITE_SETTINGS permission.
+        setSystemWritePermission();
     }
 
-    private boolean checkPlayServices() {
-        GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
-        int resultCode = apiAvailability.isGooglePlayServicesAvailable(this);
-        if (resultCode != ConnectionResult.SUCCESS) {
-            if (apiAvailability.isUserResolvableError(resultCode)) {
-                apiAvailability.getErrorDialog(this, resultCode,
-                        PLAY_SERVICES_RESOLUTION_REQUEST).show();
+    public void onClick(final View view) {
+        ServerAccess serverAccess = new ServerAccess(this);
+        if (view == findViewById(R.id.set)) {
+            if (setParameters()) {
+                mDisplay.setText(getString(R.string.msg_set));
             } else {
-                Log.i(TAG, "This device is not supported.");
-                finish();
+                Log.e(TAG, "Failed to set parameters.");
             }
-            return false;
+        } else if (view == findViewById(R.id.register)) {
+            setParameters();
+            FirebaseInstanceId.getInstance().getInstanceId()
+                    .addOnSuccessListener(new OnSuccessListener<InstanceIdResult>() {
+                        @Override
+                        public void onSuccess(InstanceIdResult instanceIdResult) {
+                            String token = instanceIdResult.getToken();
+                            myApplication.manageRegid(token);
+                        }
+                    });
+            String regid = myApplication.manageRegid(null);
+            String server_url = myApplication.manageServerUrl(null);
+            if (server_url.isEmpty()) {
+                mDisplay.setText(getString(R.string.url_empty));
+            } else if (!regid.isEmpty()) {
+                serverAccess.register(server_url, regid, true);
+            }
+            mToken.setText(regid);
+        } else if (view == findViewById(R.id.unregister)) {
+            try {
+                FirebaseInstanceId.getInstance().deleteInstanceId();
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to unregister.");
+            }
+            String regid = myApplication.manageRegid(null);
+            String server_url = myApplication.manageServerUrl(null);
+            if (server_url.isEmpty()) {
+                mDisplay.setText(getString(R.string.url_empty));
+            } else if (!regid.isEmpty()) {
+                serverAccess.register(server_url, regid, false);
+                myApplication.manageRegid("");
+            } else {
+                mDisplay.setText(getString(R.string.token_removed));
+            }
+        } else if (view == findViewById(R.id.clear)) {
+            mDisplay.setText("");
+            mToken.setText("");
         }
-        return true;
     }
 
     private void setSystemWritePermission() {
@@ -83,58 +108,17 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void onClick(final View view) {
-        ServerAccess serverAccess = new ServerAccess(this);
-        if (view == findViewById(R.id.set)) {
-            if (setParameters()) {
-                mDisplay.setText(getString(R.string.msg_set));
-            }
-        } else if (view == findViewById(R.id.register)) {
-            if (setParameters()) {
-                String token = FirebaseInstanceId.getInstance().getToken();
-                if (token != null) {
-                    serverAccess.register(
-                            myApplication.manageServerUrl(null), token, true);
-                    myApplication.manageRegid(token);
-                    mToken.setText(token);
-                }
-            }
-        } else if (view == findViewById(R.id.unregister)) {
-            try {
-                FirebaseInstanceId.getInstance().deleteInstanceId();
-            } catch (Exception e) {
-                Log.e(TAG, "Failed to unregister.");
-            }
-            String regid = myApplication.manageRegid(null);
-            if (!regid.isEmpty()) {
-                serverAccess.register(
-                        myApplication.manageServerUrl(null), regid, false);
-                myApplication.manageRegid("");
-            } else {
-                mDisplay.setText(getString(R.string.token_deleted));
-            }
-        } else if (view == findViewById(R.id.clear)) {
-            mDisplay.setText("");
-            mToken.setText("");
-        }
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-    }
-
     private void getParameters() {
-        mDisplay = (TextView) findViewById(R.id.display);
-        mToken   = (TextView) findViewById(R.id.token);
+        mDisplay = findViewById(R.id.display);
+        mToken   = findViewById(R.id.token);
 
-        editText  = (EditText) findViewById(R.id.server_url);
-        checkBox1 = (CheckBox) findViewById(R.id.launch_app);
-        checkBox2 = (CheckBox) findViewById(R.id.notif_msg);
-        checkBox3 = (CheckBox) findViewById(R.id.notif_sound);
-        checkBox4 = (CheckBox) findViewById(R.id.heads_up);
-        checkBox5 = (CheckBox) findViewById(R.id.screen_on);
-        checkBox6 = (CheckBox) findViewById(R.id.end_off);
+        editText  = findViewById(R.id.server_url);
+        checkBox1 = findViewById(R.id.launch_app);
+        checkBox2 = findViewById(R.id.notif_msg);
+        checkBox3 = findViewById(R.id.notif_sound);
+        checkBox4 = findViewById(R.id.heads_up);
+        checkBox5 = findViewById(R.id.screen_on);
+        checkBox6 = findViewById(R.id.end_off);
 
         editText.setText(myApplication.manageServerUrl(null));
         checkBox1.setChecked(myApplication.get("launch_app"));

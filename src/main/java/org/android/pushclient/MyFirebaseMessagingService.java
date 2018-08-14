@@ -112,12 +112,38 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         }
     }
 
+    /**
+     * Called when message is deleted.
+     */
     @Override
     public void onDeletedMessages() {
-        Map<String, String> data = new HashMap<String, String>();
+        Map<String, String> data = new HashMap<>();
         data.put("title", getString(R.string.app_name));
         data.put("msg", getString(R.string.msg_deleted));
         sendNotification(data, null);
+    }
+
+    /**
+     * Called if InstanceID token is updated. This may occur if the security of
+     * the previous token had been compromised. Note that this is called when the InstanceID token
+     * is initially generated so this is where you would retrieve the token.
+     */
+    @Override
+    public void onNewToken(String token) {
+        Log.i(TAG, "Refreshed token: " + token);
+
+        // Get old token.
+        MyApplication myApplication = (MyApplication) getApplicationContext();
+        String server_url = myApplication.manageServerUrl(null);
+        String regid = myApplication.manageRegid(null);
+
+        // Persist and remove token at third-party servers.
+        ServerAccess serverAccess = new ServerAccess(null);
+        if (!regid.isEmpty()) {
+            serverAccess.register(server_url, regid, false);
+        }
+        serverAccess.register(server_url, token, true);
+        myApplication.manageRegid(token);
     }
 
     /**

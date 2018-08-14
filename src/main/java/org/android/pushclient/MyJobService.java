@@ -10,8 +10,6 @@ import android.provider.Settings;
 
 public class MyJobService extends JobService {
 
-    private static final String TAG = "JobService";
-
     @Override
     public boolean onStartJob(JobParameters params) {
         int screenTimeout = params.getExtras().getInt("TIMEOUT");

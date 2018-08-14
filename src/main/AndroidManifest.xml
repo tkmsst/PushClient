@@ -32,14 +32,6 @@
             </intent-filter>
         </service>
 
-        <!-- Firebase IID service -->
-        <service
-            android:name=".MyFirebaseInstanceIDService">
-            <intent-filter>
-                <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
-            </intent-filter>
-        </service>
-
         <!-- Notification receiver -->
         <receiver android:name=".NotificationReceiver" />
 
