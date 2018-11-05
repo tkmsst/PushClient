@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -16,7 +17,8 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.InstanceIdResult;
 
@@ -60,11 +62,15 @@ public class MainActivity extends AppCompatActivity {
         } else if (view == findViewById(R.id.register)) {
             setParameters();
             FirebaseInstanceId.getInstance().getInstanceId()
-                    .addOnSuccessListener(new OnSuccessListener<InstanceIdResult>() {
+                    .addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
                         @Override
-                        public void onSuccess(InstanceIdResult instanceIdResult) {
-                            String token = instanceIdResult.getToken();
-                            myApplication.manageRegid(token);
+                        public void onComplete(@NonNull Task<InstanceIdResult> task) {
+                            if (task.isSuccessful()) {
+                                String token = task.getResult().getToken();
+                                myApplication.manageRegid(token);
+                            } else {
+                                Log.e(TAG, "Failed to get token.");
+                            }
                         }
                     });
             String regid = myApplication.manageRegid(null);
