@@ -19,6 +19,7 @@
                 android:inputType="textUri"
                 android:scrollHorizontally="true"
                 android:singleLine="true" />
+
         </TableRow>
 
         <CheckBox
@@ -87,7 +88,7 @@
     </LinearLayout>
 
     <TextView
-        android:id="@+id/display"
+        android:id="@+id/message"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textColor="#0000ff" />

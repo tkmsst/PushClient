@@ -1,5 +1,5 @@
 /**
- * ServerAccess to register token.
+ * ServerAccess to register or unregister token.
  */
 
 package org.android.pushclient;
@@ -27,7 +27,7 @@ public class ServerAccess {
         if (server_url == null || token == null) {
             return;
         } else if (server_url.isEmpty() || token.isEmpty()) {
-            return ;
+            return;
         }
         String body;
         if (reg) {
@@ -111,7 +111,7 @@ public class ServerAccess {
             }
 
             // Modify the activity's UI.
-            TextView textView = activity.findViewById(R.id.display);
+            TextView textView = activity.findViewById(R.id.message);
             textView.setText(message);
         }
     }

@@ -8,8 +8,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
-import org.android.pushclient.MyApplication;
-
 public class NotificationReceiver extends BroadcastReceiver {
 
     @Override

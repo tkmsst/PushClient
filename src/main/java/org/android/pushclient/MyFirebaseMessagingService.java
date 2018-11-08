@@ -27,17 +27,12 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
-    private static final String TAG = "FirebaseMessageService";
+    private static final String TAG = "PC:MessagingService";
+
     private static final int TIMEOUT_PERIOD = 10000;
     private static final int LAUNCH_DURATION = 15000;
     private static final int MAX_DELAY= 30000;
     private static final int MAX_MESSAGES = 5;
-
-    private boolean notif_msg = true;
-    private boolean notif_sound = true;
-    private boolean heads_up =false;
-
-    private MyApplication myApplication;
 
     /**
      * Called when message is received.
@@ -46,15 +41,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
      */
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
-        // Set variables.
-        myApplication = (MyApplication) getApplicationContext();
-        final boolean launch_app = myApplication.get("launch_app");
-        final boolean screen_on  = myApplication.get("screen_on");
-        final boolean end_off    = myApplication.get("end_off");
-
-        notif_msg   = myApplication.get("notif_msg");
-        notif_sound = myApplication.get("notif_sound");
-        heads_up    = myApplication.get("heads_up");
+        MyApplication myApplication = (MyApplication) getApplication();
 
         // Get push parameters.
         Map<String, String> data = remoteMessage.getData();
@@ -63,18 +50,20 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         Intent intent = getAppIntent(data.get("app"));
 
         // Send a notification.
-        if (notif_msg || notif_sound || heads_up) {
+        if (myApplication.notif_msg ||
+            myApplication.notif_sound ||
+            myApplication.heads_up) {
             sendNotification(data, intent);
         }
 
-        if (!launch_app && !screen_on) {
+        if (!myApplication.launch_app && !myApplication.screen_on) {
             return;
         }
 
         // Set screen off timeout.
         int screenTimeout = 0;
         PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
-        if (end_off && !powerManager.isInteractive()) {
+        if (myApplication.end_off && !powerManager.isInteractive()) {
             screenTimeout = Settings.System.getInt(getContentResolver(),
                     Settings.System.SCREEN_OFF_TIMEOUT, 0);
             if (screenTimeout > TIMEOUT_PERIOD) {
@@ -85,7 +74,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
         // Acquire a wake lock.
         int pmFlag = PowerManager.ACQUIRE_CAUSES_WAKEUP;
-        if (screen_on) {
+        if (myApplication.screen_on) {
             pmFlag |= PowerManager.FULL_WAKE_LOCK;
         } else {
             pmFlag |= PowerManager.PARTIAL_WAKE_LOCK;
@@ -94,7 +83,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         wakeLock.acquire(LAUNCH_DURATION);
 
         // Start the activity.
-        if (launch_app && intent != null) {
+        if (myApplication.launch_app && intent != null) {
             intent.addFlags(
                     Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS |
                     Intent.FLAG_ACTIVITY_NO_ANIMATION |
@@ -117,6 +106,8 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
      */
     @Override
     public void onDeletedMessages() {
+        MyApplication myApplication = (MyApplication) getApplication();
+
         Map<String, String> data = new HashMap<>();
         data.put("title", getString(R.string.app_name));
         data.put("msg", getString(R.string.msg_deleted));
@@ -130,20 +121,20 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
      */
     @Override
     public void onNewToken(String token) {
+        MyApplication myApplication = (MyApplication) getApplication();
+
         Log.i(TAG, "Refreshed token: " + token);
 
         // Get old token.
-        MyApplication myApplication = (MyApplication) getApplicationContext();
-        String server_url = myApplication.manageServerUrl(null);
-        String regid = myApplication.manageRegid(null);
+        String regid = myApplication.getRegid();
 
         // Persist and remove token at third-party servers.
         ServerAccess serverAccess = new ServerAccess(null);
         if (!regid.isEmpty()) {
-            serverAccess.register(server_url, regid, false);
+            serverAccess.register(myApplication.server_url, regid, false);
         }
-        serverAccess.register(server_url, token, true);
-        myApplication.manageRegid(token);
+        serverAccess.register(myApplication.server_url, token, true);
+        myApplication.storeRegid(token);
     }
 
     /**
@@ -152,13 +143,15 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
      * @param data FCM data object received.
      */
     private void sendNotification(Map<String, String> data, Intent intent) {
+        MyApplication myApplication = (MyApplication) getApplication();
+
         // Set title and message.
         String title = data.get("title");
         String message = data.get("msg");
 
         // Set defaults.
         int defaultsFlag = Notification.DEFAULT_LIGHTS;
-        if (notif_sound) {
+        if (myApplication.notif_sound) {
             defaultsFlag |= Notification.DEFAULT_SOUND;
         }
 
@@ -175,7 +168,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         }
 
         // Set notification messages.
-        if (notif_msg && message != null) {
+        if (myApplication.notif_msg && message != null) {
             ConcurrentLinkedQueue<String> messageQueue = myApplication.getQueue();
             if (!message.isEmpty()) {
                 notificationBuilder.setContentText(message);
@@ -199,7 +192,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         }
 
         // Set the heads-up notification.
-        if (heads_up) {
+        if (myApplication.heads_up) {
             notificationBuilder.setFullScreenIntent(PendingIntent.getActivity(this,
                     0, new Intent(), 0), true);
         }
