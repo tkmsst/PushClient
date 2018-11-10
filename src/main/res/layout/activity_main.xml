@@ -23,27 +23,27 @@
         </TableRow>
 
         <CheckBox
-            android:id="@+id/launch_app"
+            android:id="@+id/flag1"
             android:text="@string/launch_app" />
 
         <CheckBox
-            android:id="@+id/notif_msg"
+            android:id="@+id/flag2"
             android:text="@string/notif_msg" />
 
         <CheckBox
-            android:id="@+id/notif_sound"
+            android:id="@+id/flag3"
             android:text="@string/notif_sound" />
 
         <CheckBox
-            android:id="@+id/heads_up"
+            android:id="@+id/flag4"
             android:text="@string/heads_up" />
 
         <CheckBox
-            android:id="@+id/screen_on"
+            android:id="@+id/flag5"
             android:text="@string/screen_on" />
 
         <CheckBox
-            android:id="@+id/end_off"
+            android:id="@+id/flag6"
             android:text="@string/end_off" />
 
     </TableLayout>
@@ -88,7 +88,7 @@
     </LinearLayout>
 
     <TextView
-        android:id="@+id/message"
+        android:id="@+id/view1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textColor="#0000ff" />
@@ -106,7 +106,7 @@
         android:textStyle="bold|italic" />
 
     <TextView
-        android:id="@+id/token"
+        android:id="@+id/view2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:selectAllOnFocus="true"

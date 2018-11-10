@@ -34,10 +34,17 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     private static final int MAX_DELAY= 30000;
     private static final int MAX_MESSAGES = 5;
 
+    /*
+        flags[0] = launch_app;
+        flags[1] = notif_msg;
+        flags[2] = notif_sound;
+        flags[3] = heads_up;
+        flags[4] = screen_on;
+        flags[5] = end_off;
+     */
+
     /**
-     * Called when message is received.
-     *
-     * @param remoteMessage Object representing the message received from Firebase Cloud Messaging.
+     * Called when a message is received.
      */
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
@@ -50,20 +57,18 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         Intent intent = getAppIntent(data.get("app"));
 
         // Send a notification.
-        if (myApplication.notif_msg ||
-            myApplication.notif_sound ||
-            myApplication.heads_up) {
+        if (myApplication.flag[1] || myApplication.flag[2] || myApplication.flag[3]) {
             sendNotification(data, intent);
         }
 
-        if (!myApplication.launch_app && !myApplication.screen_on) {
+        if (!myApplication.flag[0] && !myApplication.flag[4]) {
             return;
         }
 
         // Set screen off timeout.
         int screenTimeout = 0;
         PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
-        if (myApplication.end_off && !powerManager.isInteractive()) {
+        if (myApplication.flag[5] && !powerManager.isInteractive()) {
             screenTimeout = Settings.System.getInt(getContentResolver(),
                     Settings.System.SCREEN_OFF_TIMEOUT, 0);
             if (screenTimeout > TIMEOUT_PERIOD) {
@@ -74,7 +79,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
         // Acquire a wake lock.
         int pmFlag = PowerManager.ACQUIRE_CAUSES_WAKEUP;
-        if (myApplication.screen_on) {
+        if (myApplication.flag[4]) {
             pmFlag |= PowerManager.FULL_WAKE_LOCK;
         } else {
             pmFlag |= PowerManager.PARTIAL_WAKE_LOCK;
@@ -83,7 +88,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         wakeLock.acquire(LAUNCH_DURATION);
 
         // Start the activity.
-        if (myApplication.launch_app && intent != null) {
+        if (myApplication.flag[0] && intent != null) {
             intent.addFlags(
                     Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS |
                     Intent.FLAG_ACTIVITY_NO_ANIMATION |
@@ -102,7 +107,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     }
 
     /**
-     * Called when message is deleted.
+     * Called when the message is deleted.
      */
     @Override
     public void onDeletedMessages() {
@@ -115,43 +120,35 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     }
 
     /**
-     * Called if InstanceID token is updated. This may occur if the security of
-     * the previous token had been compromised. Note that this is called when the InstanceID token
-     * is initially generated so this is where you would retrieve the token.
+     * Called if InstanceID token is updated.
      */
     @Override
     public void onNewToken(String token) {
-        MyApplication myApplication = (MyApplication) getApplication();
-
         Log.i(TAG, "Refreshed token: " + token);
 
-        // Get old token.
-        String regid = myApplication.getRegid();
-
         // Persist and remove token at third-party servers.
+        MyApplication myApplication = (MyApplication) getApplication();
         ServerAccess serverAccess = new ServerAccess(null);
-        if (!regid.isEmpty()) {
-            serverAccess.register(myApplication.server_url, regid, false);
+        if (!myApplication.regid.isEmpty()) {
+            serverAccess.register(myApplication.server_url, myApplication.regid, false);
         }
         serverAccess.register(myApplication.server_url, token, true);
         myApplication.storeRegid(token);
     }
 
     /**
-     * Create and show a simple notification containing the received FCM message.
-     *
-     * @param data FCM data object received.
+     * Create and show a notification containing the received FCM message.
      */
     private void sendNotification(Map<String, String> data, Intent intent) {
         MyApplication myApplication = (MyApplication) getApplication();
 
-        // Set title and message.
+        // Set the title and the message.
         String title = data.get("title");
         String message = data.get("msg");
 
         // Set defaults.
         int defaultsFlag = Notification.DEFAULT_LIGHTS;
-        if (myApplication.notif_sound) {
+        if (myApplication.flag[2]) {
             defaultsFlag |= Notification.DEFAULT_SOUND;
         }
 
@@ -162,13 +159,13 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 .setDeleteIntent(getDeleteIntent())
                 .setDefaults(defaultsFlag);
 
-        // Set notification title.
+        // Set a notification title.
         if (title != null) {
             notificationBuilder.setContentTitle(title);
         }
 
         // Set notification messages.
-        if (myApplication.notif_msg && message != null) {
+        if (myApplication.flag[1] && message != null) {
             ConcurrentLinkedQueue<String> messageQueue = myApplication.getQueue();
             if (!message.isEmpty()) {
                 notificationBuilder.setContentText(message);
@@ -192,7 +189,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         }
 
         // Set the heads-up notification.
-        if (myApplication.heads_up) {
+        if (myApplication.flag[3]) {
             notificationBuilder.setFullScreenIntent(PendingIntent.getActivity(this,
                     0, new Intent(), 0), true);
         }

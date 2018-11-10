@@ -64,7 +64,6 @@ public class ServerAccess {
             }
 
             byte bodyByte[] = params[1].getBytes();
-
             HttpURLConnection con = null;
             try {
                 con = (HttpURLConnection) url.openConnection();
@@ -110,8 +109,8 @@ public class ServerAccess {
                 return;
             }
 
-            // Modify the activity's UI.
-            TextView textView = activity.findViewById(R.id.message);
+            // Show the message on the activity's UI.
+            TextView textView = activity.findViewById(R.id.view1);
             textView.setText(message);
         }
     }
