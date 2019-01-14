@@ -1,5 +1,5 @@
 <?php
-	$file_path = "/usr/local/sbin/push.dat";
+	$file_path = "/usr/local/bin/push.dat";
 
 	if (isset($_POST['register']))
 		$token = $_POST['register'];

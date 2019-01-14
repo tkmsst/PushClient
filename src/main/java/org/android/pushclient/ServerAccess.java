@@ -14,6 +14,14 @@ import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.cert.X509Certificate;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 public class ServerAccess {
 
@@ -51,21 +59,18 @@ public class ServerAccess {
         @Override
         protected String doInBackground(String... params) {
             String message;
-            String endpoint = params[0];
-            if (!endpoint.startsWith(PROTOCOL)) {
-                endpoint = PROTOCOL + "://" + endpoint;
-            }
             URL url;
             try {
-                url = new URL(endpoint);
+                url = new URL(params[0]);
             } catch (MalformedURLException e) {
-                message = "Invalid URL: " + endpoint;
+                message = "Invalid URL: " + params[0];
                 return message;
             }
 
-            byte bodyByte[] = params[1].getBytes();
+            disableSSLCertificateChecking();
             HttpURLConnection con = null;
             try {
+                byte bodyByte[] = params[1].getBytes();
                 con = (HttpURLConnection) url.openConnection();
                 con.setDoInput(true);
                 con.setDoOutput(true);
@@ -112,6 +117,35 @@ public class ServerAccess {
             // Show the message on the activity's UI.
             TextView textView = activity.findViewById(R.id.view1);
             textView.setText(message);
+        }
+    }
+
+    private static void disableSSLCertificateChecking() {
+        HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
+            @Override
+            public boolean verify(String hostname, SSLSession session) {
+                return true;
+            }
+        });
+
+        TrustManager[] tm = { new X509TrustManager() {
+            @Override
+            public void checkClientTrusted(X509Certificate[] chain, String authType) {
+            }
+            @Override
+            public void checkServerTrusted(X509Certificate[] chain, String authType) {
+            }
+            @Override
+            public X509Certificate[] getAcceptedIssuers() {
+                return null;
+            }
+        } };
+
+        try {
+            SSLContext sslcontext = SSLContext.getInstance("SSL");
+            sslcontext.init(null, tm, null);
+            HttpsURLConnection.setDefaultSSLSocketFactory(sslcontext.getSocketFactory());
+        } catch (Exception e) {
         }
     }
 }
