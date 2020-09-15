@@ -12,7 +12,7 @@ public class MyJobService extends JobService {
 
     @Override
     public boolean onStartJob(JobParameters params) {
-        int screenTimeout = params.getExtras().getInt("TIMEOUT");
+        final int screenTimeout = params.getExtras().getInt("TIMEOUT");
         if (screenTimeout > 0) {
             Settings.System.putInt(getContentResolver(),
                     Settings.System.SCREEN_OFF_TIMEOUT, screenTimeout);
@@ -22,7 +22,6 @@ public class MyJobService extends JobService {
 
     @Override
     public boolean onStopJob(JobParameters params) {
-        jobFinished(params, false);
         return false;
     }
 }
