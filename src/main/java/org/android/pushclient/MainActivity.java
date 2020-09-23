@@ -26,9 +26,10 @@ public class MainActivity extends Activity {
     private static final String TAG = "PC:MainActivity";
 
     private MyApplication myApplication;
+    private ServerAccess serverAccess;
     private EditText editText;
-    private CheckBox[] checkBox = new CheckBox[MyApplication.MAX_FLAG];;
-    private TextView[] textView = new TextView[2];;
+    private CheckBox[] checkBox = new CheckBox[MyApplication.MAX_FLAG];
+    private TextView[] textView = new TextView[2];
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -39,6 +40,7 @@ public class MainActivity extends Activity {
         setSystemWritePermission();
 
         myApplication = (MyApplication) getApplication();
+        serverAccess = new ServerAccess(this);
         getUiResources();
         getParameters();
     }
@@ -51,7 +53,6 @@ public class MainActivity extends Activity {
     }
 
     public void onClick(final View view) {
-        ServerAccess serverAccess = new ServerAccess(this);
         if (view == findViewById(R.id.set)) {
             if (setParameters()) {
                 textView[0].setText(getString(R.string.msg_set));
@@ -64,21 +65,23 @@ public class MainActivity extends Activity {
                     .addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
                         @Override
                         public void onComplete(Task<InstanceIdResult> task) {
-                            if (task != null && task.isSuccessful()) {
-                                String token = task.getResult().getToken();
+                            if (task.isSuccessful()) {
+                                // Get the Instance ID token.
+                                final String token = task.getResult().getToken();
                                 myApplication.storeRegid(token);
+                                textView[1].setText(token);
+                                // Send the token to the server.
+                                if (myApplication.server_url.isEmpty()) {
+                                    textView[0].setText(getString(R.string.url_empty));
+                                } else {
+                                    serverAccess.register(
+                                            myApplication.server_url, token, true);
+                                }
                             } else {
                                 Log.e(TAG, "Failed to get token.");
                             }
                         }
                     });
-            if (myApplication.server_url.isEmpty()) {
-                textView[0].setText(getString(R.string.url_empty));
-            } else {
-                serverAccess.register(myApplication.server_url,
-                        myApplication.regid, true);
-            }
-            textView[1].setText(myApplication.regid);
         } else if (view == findViewById(R.id.unregister)) {
             setParameters();
             try {
