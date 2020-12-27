@@ -14,10 +14,11 @@ import static android.preference.PreferenceManager.getDefaultSharedPreferences;
 
 public class MyApplication extends Application {
 
-    public static final int MAX_FLAG = 6;
+    public static final int MAX_FLAG = 3;
 
     public volatile String regid;
     public volatile String server_url;
+    public volatile int importance;
     public volatile boolean[] flag = new boolean[MAX_FLAG];
 
     private SharedPreferences prefs;
@@ -31,10 +32,11 @@ public class MyApplication extends Application {
         prefs = getDefaultSharedPreferences(this);
         regid = prefs.getString("regid", "");
         server_url = prefs.getString("server_url", "");
+        importance = prefs.getInt("importance", 3);
 
-        final boolean[] defaultFlag= {true, true, true, false, false, true};
-        for(int i = 0; i < MAX_FLAG; i++) {
-            String str = String.valueOf(i + 1);
+        final boolean[] defaultFlag = {true, false, true};
+        for (int i = 0; i < MAX_FLAG; i++) {
+            final String str = String.valueOf(i + 1);
             flag[i] = prefs.getBoolean("flag" + str, defaultFlag[i]);
         }
 
@@ -55,8 +57,9 @@ public class MyApplication extends Application {
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString("regid", regid);
         editor.putString("server_url", server_url);
-        for(int i = 0; i < MAX_FLAG; i++) {
-            String str = String.valueOf(i + 1);
+        editor.putInt("importance", importance);
+        for (int i = 0; i < MAX_FLAG; i++) {
+            final String str = String.valueOf(i + 1);
             editor.putBoolean("flag" + str, flag[i]);
         }
         return editor.commit();

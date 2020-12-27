@@ -1,10 +1,9 @@
 <resources>
     <string name="app_name">Push Client</string>
+    <string name="channel_name">Notification</string>
     <string name="server_url">Server URL</string>
+    <string name="importance">Notification importance</string>
     <string name="launch_app">Launch the app upon a push notification received</string>
-    <string name="notif_msg">Display notification messages</string>
-    <string name="notif_sound">Play a notification sound</string>
-    <string name="heads_up">Display heads-up notifications</string>
     <string name="screen_on">Turn the screen on upon a push notification received</string>
     <string name="end_off">Turn the screen off after the activity ends</string>
     <string name="set">Set</string>
@@ -14,6 +13,14 @@
     <string name="msg_set">Set parameters.</string>
     <string name="token_removed">The token has already been removed.</string>
     <string name="msg_deleted">Deleted messages on the server.</string>
+    <string name="no_token">Failed to get token.</string>
     <string name="url_empty">Server URL is empty.</string>
     <string name="more_msg">+%1$d more</string>
+    <string-array name="importance">
+        <item>No notification</item>
+        <item>Low (No icon)</item>
+        <item>Medium (No sound)</item>
+        <item>High</item>
+        <item>Urgent (Heads-up)</item>
+    </string-array>
 </resources>

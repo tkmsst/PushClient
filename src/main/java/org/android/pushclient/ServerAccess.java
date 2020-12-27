@@ -14,6 +14,7 @@ import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.security.cert.X509Certificate;
 
 import javax.net.ssl.HostnameVerifier;
@@ -70,7 +71,7 @@ public class ServerAccess {
             disableSSLCertificateChecking();
             HttpURLConnection con = null;
             try {
-                byte bodyByte[] = params[1].getBytes();
+                byte[] bodyByte = params[1].getBytes();
                 con = (HttpURLConnection) url.openConnection();
                 con.setDoInput(true);
                 con.setDoOutput(true);
@@ -86,9 +87,9 @@ public class ServerAccess {
                 final int status = con.getResponseCode();
                 if (status == HttpURLConnection.HTTP_OK) {
                     InputStream in = con.getInputStream();
-                    byte response[] = new byte[1024];
+                    byte[] response = new byte[1024];
                     if (in.read(response) > 0) {
-                        message = new String(response, "UTF-8");
+                        message = new String(response, StandardCharsets.UTF_8);
                     } else {
                         message = "No response from the server.";
                     }
@@ -97,7 +98,7 @@ public class ServerAccess {
                     message = "The server responded with an error: " + status;
                 }
             } catch (IOException e) {
-                message ="Failed to connect to the server.";
+                message = "Failed to connect to the server.";
             } finally {
                 if (con != null) {
                     con.disconnect();
@@ -128,18 +129,20 @@ public class ServerAccess {
             }
         });
 
-        TrustManager[] tm = { new X509TrustManager() {
+        TrustManager[] tm = {new X509TrustManager() {
             @Override
             public void checkClientTrusted(X509Certificate[] chain, String authType) {
             }
+
             @Override
             public void checkServerTrusted(X509Certificate[] chain, String authType) {
             }
+
             @Override
             public X509Certificate[] getAcceptedIssuers() {
                 return null;
             }
-        } };
+        }};
 
         try {
             SSLContext sslcontext = SSLContext.getInstance("SSL");

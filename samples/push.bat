@@ -13,6 +13,6 @@ for /f "usebackq" %%I in ("%~dp0push.dat") do (
 )
 set IDS=%IDS:~1%
 
-curl -k --header "Authorization: key=%APIKEY%" --header Content-Type:"application/json" https://fcm.googleapis.com/fcm/send -d "{\"registration_ids\":[%IDS%],\"collapse_key\":\"pushclient\",\"priority\":\"high\",\"direct_book_ok\":true,\"data\":{\"app\":\"%APPLICATION%\",\"title\":\"%TITLE%\",\"msg\":\"%MESSAGE%\"}}"
+curl -k --header "Authorization: key=%APIKEY%" --header Content-Type:"application/json" https://fcm.googleapis.com/fcm/send -d "{\"registration_ids\":[%IDS%],\"priority\":\"high\",\"direct_book_ok\":true,\"data\":{\"app\":\"%APPLICATION%\",\"title\":\"%TITLE%\",\"msg\":\"%MESSAGE%\"}}"
 
 endlocal

@@ -3,50 +3,69 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <TableLayout
+    <TextView
+        android:text="@string/server_url"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <EditText
+        android:id="@+id/server_url"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:stretchColumns="1">
+        android:hint="http://server.com/reg.php"
+        android:inputType="textUri"
+        android:scrollHorizontally="true"
+        android:singleLine="true" />
 
-        <TableRow>
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="24dp"/>
 
-            <TextView android:text="@string/server_url" />
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
 
-            <EditText
-                android:id="@+id/server_url"
-                android:layout_weight="1"
-                android:hint="http://server.com/reg.php"
-                android:inputType="textUri"
-                android:scrollHorizontally="true"
-                android:singleLine="true" />
+        <TextView
+            android:text="@string/importance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp" />
 
-        </TableRow>
+        <Spinner
+            android:id="@+id/importance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:entries="@array/importance"
+            style="@android:style/Widget.Material.Spinner.Underlined" />
 
-        <CheckBox
-            android:id="@+id/flag1"
-            android:text="@string/launch_app" />
+    </LinearLayout>
 
-        <CheckBox
-            android:id="@+id/flag2"
-            android:text="@string/notif_msg" />
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="24dp"/>
 
-        <CheckBox
-            android:id="@+id/flag3"
-            android:text="@string/notif_sound" />
+    <CheckBox
+        android:id="@+id/flag1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/launch_app" />
 
-        <CheckBox
-            android:id="@+id/flag4"
-            android:text="@string/heads_up" />
+    <CheckBox
+        android:id="@+id/flag2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/screen_on" />
 
-        <CheckBox
-            android:id="@+id/flag5"
-            android:text="@string/screen_on" />
+    <CheckBox
+        android:id="@+id/flag3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/end_off" />
 
-        <CheckBox
-            android:id="@+id/flag6"
-            android:text="@string/end_off" />
-
-    </TableLayout>
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="24dp"/>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -96,7 +115,7 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="1dip"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="24dp"
         android:background="#888888" />
 
     <TextView
