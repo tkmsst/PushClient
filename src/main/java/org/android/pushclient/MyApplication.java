@@ -7,7 +7,7 @@ package org.android.pushclient;
 import android.app.Application;
 import android.content.SharedPreferences;
 
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static android.preference.PreferenceManager.getDefaultSharedPreferences;
@@ -22,7 +22,7 @@ public class MyApplication extends Application {
     public volatile boolean[] flag = new boolean[MAX_FLAG];
 
     private SharedPreferences prefs;
-    private ConcurrentLinkedQueue<String> queue;
+    private ConcurrentLinkedDeque<String> queue;
     private AtomicInteger counter;
 
     @Override
@@ -40,7 +40,7 @@ public class MyApplication extends Application {
             flag[i] = prefs.getBoolean("flag" + str, defaultFlag[i]);
         }
 
-        queue = new ConcurrentLinkedQueue<>();
+        queue = new ConcurrentLinkedDeque<>();
         counter = new AtomicInteger(0);
     }
 
@@ -65,7 +65,7 @@ public class MyApplication extends Application {
         return editor.commit();
     }
 
-    public ConcurrentLinkedQueue<String> getQueue() {
+    public ConcurrentLinkedDeque<String> getQueue() {
         return queue;
     }
 

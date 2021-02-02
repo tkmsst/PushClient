@@ -26,7 +26,7 @@ import com.google.firebase.messaging.RemoteMessage;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
@@ -152,18 +152,17 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         }
 
         // Set the messages.
+        ConcurrentLinkedDeque<String> messageQueue = myApplication.getQueue();
         final String message = data.get("msg");
-        ConcurrentLinkedQueue<String> messageQueue = myApplication.getQueue();
-        if (message != null) {
-            if (!message.isEmpty()) {
-                if (messageQueue.size() == MAX_MESSAGES) {
-                    messageQueue.remove();
-                    myApplication.incrementCounter();
-                }
-                messageQueue.add(message);
+        if (message != null && !message.isEmpty()) {
+            notificationBuilder.setContentText(message);
+            if (messageQueue.size() >= MAX_MESSAGES) {
+                messageQueue.pollLast();
+                myApplication.incrementCounter();
             }
+            messageQueue.offerFirst(message);
         }
-        if (messageQueue.size() > 0) {
+        if (messageQueue.size() > 1) {
             Notification.InboxStyle inboxStyle = new Notification.InboxStyle();
             for (String s : messageQueue) {
                 inboxStyle.addLine(s);
