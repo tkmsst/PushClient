@@ -25,8 +25,7 @@ import androidx.annotation.NonNull;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.iid.FirebaseInstanceId;
-import com.google.firebase.iid.InstanceIdResult;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 public class MainActivity extends Activity {
 
@@ -71,13 +70,13 @@ public class MainActivity extends Activity {
             }
         } else if (view == findViewById(R.id.register)) {
             setParameters();
-            FirebaseInstanceId.getInstance().getInstanceId()
-                    .addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
+            FirebaseMessaging.getInstance().getToken()
+                    .addOnCompleteListener(new OnCompleteListener<String>() {
                         @Override
-                        public void onComplete(@NonNull Task<InstanceIdResult> task) {
+                        public void onComplete(@NonNull Task<String> task) {
                             if (task.isSuccessful()) {
                                 // Get the Instance ID token.
-                                final String token = task.getResult().getToken();
+                                final String token = task.getResult();
                                 myApplication.storeRegid(token);
                                 textView[1].setText(token);
                                 // Send the token to the server.
@@ -94,11 +93,6 @@ public class MainActivity extends Activity {
                     });
         } else if (view == findViewById(R.id.unregister)) {
             setParameters();
-            try {
-                FirebaseInstanceId.getInstance().deleteInstanceId();
-            } catch (Exception e) {
-                Log.e(TAG, "Failed to delete token.");
-            }
             if (myApplication.server_url.isEmpty()) {
                 textView[0].setText(getString(R.string.url_empty));
             } else if (myApplication.regid.isEmpty()) {
@@ -109,8 +103,8 @@ public class MainActivity extends Activity {
                 myApplication.storeRegid("");
             }
         } else if (view == findViewById(R.id.clear)) {
-            for (int i = 0; i < textView.length; i++) {
-                textView[i].setText("");
+            for (TextView t : textView) {
+                t.setText("");
             }
         }
     }

@@ -19,6 +19,8 @@ import android.os.PowerManager;
 import android.provider.Settings;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
@@ -107,8 +109,6 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
      */
     @Override
     public void onDeletedMessages() {
-        MyApplication myApplication = (MyApplication) getApplication();
-
         Map<String, String> data = new HashMap<>();
         data.put("title", getString(R.string.app_name));
         data.put("msg", getString(R.string.msg_deleted));
@@ -119,7 +119,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
      * Called if InstanceID token is updated.
      */
     @Override
-    public void onNewToken(String token) {
+    public void onNewToken(@NonNull String token) {
         Log.i(TAG, "Refreshed token: " + token);
 
         // Persist and remove token at third-party servers.
