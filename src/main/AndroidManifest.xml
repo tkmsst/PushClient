@@ -12,6 +12,7 @@
     <!-- Application -->
     <application
         android:name=".MyApplication"
+        android:directBootAware="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme">
@@ -27,19 +28,24 @@
         </activity>
 
         <!-- Firebase service -->
-        <service android:name=".MyFirebaseMessagingService">
+        <service
+            android:name=".MyFirebaseMessagingService"
+            android:exported="false"
+            android:directBootAware="true">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
 
         <!-- Notification receiver -->
-        <receiver android:name=".NotificationReceiver" />
+        <receiver
+            android:name=".NotificationReceiver"
+            android:directBootAware="true" />
 
         <!-- Job service -->
         <service
             android:name=".MyJobService"
-            android:exported="true"
+            android:directBootAware="true"
             android:permission="android.permission.BIND_JOB_SERVICE" />
     </application>
 

@@ -29,7 +29,7 @@ public class MyApplication extends Application {
     public void onCreate() {
         super.onCreate();
 
-        prefs = getDefaultSharedPreferences(this);
+        prefs = getDefaultSharedPreferences(createDeviceProtectedStorageContext());
         regid = prefs.getString("regid", "");
         server_url = prefs.getString("server_url", "");
         importance = prefs.getInt("importance", 3);
