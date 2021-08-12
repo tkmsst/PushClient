@@ -79,8 +79,6 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             if (screenTimeout > TIMEOUT_PERIOD) {
                 Settings.System.putInt(
                         getContentResolver(), Settings.System.SCREEN_OFF_TIMEOUT, TIMEOUT_PERIOD);
-            } else {
-                screenTimeout = 0;
             }
         }
 
