@@ -5,8 +5,8 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.2.2'
-        classpath 'com.google.gms:google-services:4.3.10'
+        classpath 'com.android.tools.build:gradle:7.3.1'
+        classpath 'com.google.gms:google-services:4.3.15'
     }
 }
 
@@ -18,12 +18,13 @@ repositories {
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 30
+    namespace 'org.android.pushclient'
+    compileSdk 30
 
     defaultConfig {
-        applicationId "org.android.pushclient"
-        minSdkVersion 26
-        targetSdkVersion 30
+        applicationId 'org.android.pushclient'
+        minSdk 26
+        targetSdk 30
         versionCode 5
         versionName "1.05"
     }
@@ -35,14 +36,14 @@ android {
             zipAlignEnabled true
         }
     }
-    lintOptions {
+    lint {
         checkReleaseBuilds false
     }
 }
 
 dependencies {
-    implementation 'com.google.firebase:firebase-messaging:22.0.0'
-    implementation 'com.google.firebase:firebase-messaging-directboot:22.0.0'
+    implementation 'com.google.firebase:firebase-messaging:23.1.2'
+    implementation 'com.google.firebase:firebase-messaging-directboot:23.1.2'
 }
 
 apply plugin: 'com.google.gms.google-services'
