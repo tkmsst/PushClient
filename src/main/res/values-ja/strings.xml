@@ -2,7 +2,7 @@
     <string name="app_name">Push Client</string>
     <string name="channel_name">通知</string>
     <string name="server_url">サーバーURL</string>
-    <string name="importance">通知の重要度</string>
+    <string name="importance">重要度</string>
     <string name="launch_app">プッシュ通知受信時にアプリを起動する</string>
     <string name="screen_on">プッシュ通知受信時に画面をオンにする</string>
     <string name="end_off">アクティビティ終了後に画面をオフにする</string>
@@ -17,10 +17,10 @@
     <string name="url_empty">サーバーURLが空欄です。</string>
     <string name="more_msg">+%1$d個の通知</string>
     <string-array name="importance">
-        <item>通知なし</item>
-        <item>低（通知アイコンなし）</item>
+        <item>なし</item>
+        <item>低（通知シェードのみ）</item>
         <item>中（通知音なし）</item>
-        <item>高</item>
-        <item>緊急（ヘッドアップ通知）</item>
+        <item>高（通知音）</item>
+        <item>緊急（ヘッドアップ通知、通知音）</item>
     </string-array>
 </resources>

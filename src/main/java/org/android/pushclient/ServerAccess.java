@@ -30,10 +30,10 @@ import javax.net.ssl.X509TrustManager;
 
 public class ServerAccess {
 
-    private final Context conText;
+    private final Context context;
 
-    public ServerAccess(Context context) {
-        conText = context;
+    public ServerAccess(Context ct) {
+        context = ct;
     }
 
     public void register(String server_url, String token, boolean reg) {
@@ -107,7 +107,7 @@ public class ServerAccess {
                         }
                     }
                 }
-                if (conText == null) {
+                if (context == null) {
                     return;
                 }
 
@@ -115,7 +115,7 @@ public class ServerAccess {
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        TextView textView = ((Activity) conText).findViewById(R.id.view1);
+                        TextView textView = ((Activity) context).findViewById(R.id.view1);
                         textView.setText(message);
                     }
                 });

@@ -54,11 +54,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         Map<String, String> data = remoteMessage.getData();
 
         // Send a notification.
-        if (myApplication.importance > 0) {
-            sendNotification(data);
-        } else {
-            return;
-        }
+        sendNotification(data);
 
         // Acquire a wake lock.
         int pmFlag;
@@ -67,7 +63,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         } else {
             pmFlag = PowerManager.PARTIAL_WAKE_LOCK;
         }
-        PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        PowerManager powerManager = getSystemService(PowerManager.class);
         PowerManager.WakeLock wakeLock = powerManager.newWakeLock(pmFlag, TAG);
         wakeLock.acquire(LAUNCH_DURATION);
 
@@ -175,18 +171,16 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         // Set a PendingIntent.
         Intent intent = getAppIntent(data.get("app"));
         if (intent != null) {
-            notificationBuilder.setContentIntent(PendingIntent.getActivity(
-                    this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT));
+            notificationBuilder.setContentIntent(PendingIntent.getActivity(this, 0,
+                    intent, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT));
         }
 
         // Notify.
         NotificationChannel channel = new NotificationChannel(
                 CHANNEL_ID, getString(R.string.channel_name), NotificationManager.IMPORTANCE_HIGH);
         channel.enableLights(true);
-        channel.setImportance(myApplication.importance);
         channel.setShowBadge(false);
-        NotificationManager notificationManager =
-                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        NotificationManager notificationManager = getSystemService(NotificationManager.class);
         notificationManager.createNotificationChannel(channel);
         notificationManager.notify(0, notificationBuilder.build());
     }
@@ -210,14 +204,14 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     private PendingIntent getDeleteIntent() {
         Intent intent = new Intent(this, NotificationReceiver.class);
         return PendingIntent.getBroadcast(
-                this, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+                this, 0, intent, PendingIntent.FLAG_IMMUTABLE);
     }
 
     /**
-     * Schedule a job using JobScheduler.
+     * Schedule asynchronous work.
      */
     private void scheduleJob(int screenTimeout) {
-        JobScheduler scheduler = (JobScheduler) getSystemService(Context.JOB_SCHEDULER_SERVICE);
+        JobScheduler jobScheduler = (JobScheduler) getSystemService(Context.JOB_SCHEDULER_SERVICE);
         ComponentName componentName = new ComponentName(this, MyJobService.class);
         PersistableBundle persistableBundle = new PersistableBundle();
         persistableBundle.putInt("TIMEOUT", screenTimeout);
@@ -226,6 +220,6 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 .setOverrideDeadline(MAX_DELAY)
                 .setRequiresDeviceIdle(true)
                 .build();
-        scheduler.schedule(jobInfo);
+        jobScheduler.schedule(jobInfo);
     }
 }

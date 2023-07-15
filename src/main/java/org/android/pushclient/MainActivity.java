@@ -7,8 +7,8 @@ package org.android.pushclient;
 import android.app.Activity;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
-import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.PowerManager;
@@ -31,6 +31,8 @@ public class MainActivity extends Activity {
 
     private static final String TAG = "PC:MainActivity";
 
+    private NotificationChannel channel;
+    private String pkg;
     private MyApplication myApplication;
     private ServerAccess serverAccess;
     private EditText editText;
@@ -44,18 +46,22 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
 
         // Create the NotificationChannel.
-        NotificationChannel channel = new NotificationChannel(MyFirebaseMessagingService.CHANNEL_ID,
-                getString(R.string.channel_name), NotificationManager.IMPORTANCE_HIGH);
-        channel.enableLights(true);
-        channel.setShowBadge(false);
-        NotificationManager notificationManager =
-                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        notificationManager.createNotificationChannel(channel);
+        myApplication = (MyApplication) getApplication();
+        NotificationManager notificationManager = getSystemService(NotificationManager.class);
+        channel = notificationManager.getNotificationChannel(MyFirebaseMessagingService.CHANNEL_ID);
+        if (channel == null) {
+            channel = new NotificationChannel(MyFirebaseMessagingService.CHANNEL_ID,
+                    getString(R.string.channel_name), NotificationManager.IMPORTANCE_HIGH);
+            myApplication.changeable = true;
+        } else {
+            myApplication.changeable = false;
+        }
 
         // Grant system permissions.
+        pkg = getPackageName();
         setSystemPermission();
 
-        myApplication = (MyApplication) getApplication();
+        // Prepare resources.
         serverAccess = new ServerAccess(this);
         getUiResources();
         getParameters();
@@ -83,8 +89,7 @@ public class MainActivity extends Activity {
                                 if (myApplication.server_url.isEmpty()) {
                                     textView[0].setText(getString(R.string.url_empty));
                                 } else {
-                                    serverAccess.register(
-                                            myApplication.server_url, token, true);
+                                    serverAccess.register(myApplication.server_url, token, true);
                                 }
                             } else {
                                 textView[0].setText(getString(R.string.no_token));
@@ -98,8 +103,7 @@ public class MainActivity extends Activity {
             } else if (myApplication.regid.isEmpty()) {
                 textView[0].setText(getString(R.string.token_removed));
             } else {
-                serverAccess.register(
-                        myApplication.server_url, myApplication.regid, false);
+                serverAccess.register(myApplication.server_url, myApplication.regid, false);
                 myApplication.storeRegid("");
             }
         } else if (view == findViewById(R.id.clear)) {
@@ -110,18 +114,19 @@ public class MainActivity extends Activity {
     }
 
     private void setSystemPermission() {
-        String pkg = getPackageName();
         Uri pkg_uri = Uri.parse("package:" + pkg);
-        PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        PowerManager powerManager = getSystemService(PowerManager.class);
         if (!powerManager.isIgnoringBatteryOptimizations(pkg)) {
-            Intent intent = new Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
-            intent.setData(pkg_uri);
+            Intent intent = new Intent(
+                    Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, pkg_uri);
             startActivity(intent);
         }
+
         if (!Settings.canDrawOverlays(this)) {
             Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, pkg_uri);
             startActivity(intent);
         }
+
         if (!Settings.System.canWrite(this)) {
             Intent intent = new Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS, pkg_uri);
             startActivity(intent);
@@ -129,43 +134,57 @@ public class MainActivity extends Activity {
     }
 
     private void getUiResources() {
+        Resources res = getResources();
+
         editText = findViewById(R.id.server_url);
 
         spinner = findViewById(R.id.importance);
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
                 this, R.array.importance, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setEnabled(myApplication.changeable);
         spinner.setAdapter(adapter);
 
         checkBox = new CheckBox[MyApplication.MAX_FLAG];
         for (int i = 0; i < checkBox.length; i++) {
             String str = String.valueOf(i + 1);
-            checkBox[i] = findViewById(getResources().getIdentifier(
-                    "flag" + str, "id", getPackageName()));
+            checkBox[i] = findViewById(res.getIdentifier("flag" + str, "id", pkg));
         }
 
         textView = new TextView[2];
         for (int i = 0; i < textView.length; i++) {
             String str = String.valueOf(i + 1);
-            textView[i] = findViewById(getResources().getIdentifier(
-                    "view" + str, "id", getPackageName()));
+            textView[i] = findViewById(res.getIdentifier("view" + str, "id", pkg));
         }
     }
 
     private void getParameters() {
         editText.setText(myApplication.server_url);
-        spinner.setSelection(myApplication.importance, false);
+        spinner.setSelection(channel.getImportance());
         for (int i = 0; i < checkBox.length; i++) {
             checkBox[i].setChecked(myApplication.flag[i]);
         }
     }
 
     private boolean setParameters() {
+        if (myApplication.changeable) {
+            createNotificationChannel(spinner.getSelectedItemPosition());
+            myApplication.changeable = false;
+            spinner.setEnabled(false);
+        }
+
         myApplication.server_url = editText.getText().toString();
-        myApplication.importance = spinner.getSelectedItemPosition();
         for (int i = 0; i < checkBox.length; i++) {
             myApplication.flag[i] = checkBox[i].isChecked();
         }
         return myApplication.storeAll();
+    }
+
+    private void createNotificationChannel(int importance) {
+        channel.enableLights(true);
+        channel.setImportance(importance);
+        channel.setShowBadge(false);
+        NotificationManager notificationManager = getSystemService(NotificationManager.class);
+        notificationManager.createNotificationChannel(channel);
     }
 }
