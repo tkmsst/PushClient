@@ -19,14 +19,14 @@ apply plugin: 'com.android.application'
 
 android {
     namespace 'org.android.pushclient'
-    compileSdk 30
+    compileSdk 33
 
     defaultConfig {
         applicationId 'org.android.pushclient'
         minSdk 26
-        targetSdk 30
-        versionCode 5
-        versionName "1.05"
+        targetSdk 33
+        versionCode 6
+        versionName "1.06"
     }
 
     buildTypes {
@@ -42,7 +42,7 @@ android {
 }
 
 dependencies {
-    implementation 'androidx.preference:preference:1.1.1'
+    implementation 'androidx.preference:preference:1.2.0'
     implementation 'com.google.firebase:firebase-messaging:23.1.2'
     implementation 'com.google.firebase:firebase-messaging-directboot:23.1.2'
 }
