@@ -1,18 +1,21 @@
 #!/bin/sh
 
-APPLICATION=App-Package-Name
-TITLE="Push Client"
+PROJECT=public-pushclient
+TTL=10s
 
-DATE=`date '+%m/%d %R'`
-MESSAGE="[$DATE] $1 <$2>"
-APIKEY=AAAALPnr2wM:APA91bEoMDt4GgFZWEx5-RwzYOzNcZkk4pr3RdDQgME4Oip8fA39XcC3hEzvpR3z2Caim1vTqGGr7JNG_ITZIe1jgSHhdi2t2kHllEW5Jy2Z5mG7xv5GHfoqeHO-1AVp9blJcE0AG3Cb
+TOKEN_FILE='/tmp/access_token.dat'
+TITLE="$1"
+MESSAGE="[`date '+%m/%d %R'`] $2"
+APP="$3"
+
+ACCESS=`cat "${TOKEN_FILE}"`
+if [ -z ${ACCESS} ]; then
+	exit 1
+fi
 
 while read TOKEN; do
-	if [ -n $TOKEN ]; then
-		IDS=$IDS,\"$TOKEN\"
+	if [ -n ${TOKEN} ]; then
+		DATA='{"message":{"token":"'${TOKEN}'","data":{"title":"'${TITLE}'","msg":"'${MESSAGE}'","app":"'${APP}'"},"android":{"priority":"high","ttl":"'${TTL}'","direct_boot_ok":true}}}'
+		curl -X POST -H "Authorization: Bearer ${ACCESS}" -H "Content-Type: application/json" -d "${DATA}" https://fcm.googleapis.com/v1/projects/${PROJECT}/messages:send
 	fi
 done < `dirname $0`/push.dat
-IDS=`echo $IDS | sed 's/^.//'`
-
-curl -k --header "Authorization: key=$APIKEY" --header Content-Type:"application/json" https://fcm.googleapis.com/fcm/send -d '{"registration_ids":['"$IDS"'],"priority":"high","direct_book_ok":true,"data":{"app":"'"$APPLICATION"'","title":"'"$TITLE"'","msg":"'"$MESSAGE"'"}}'
-echo

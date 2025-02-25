@@ -16,12 +16,14 @@ Refer to the [samples](samples) directory for sample scripts and configuration f
 
 ### Scripts
 
-| File     | Description                       |
-| -------- | --------------------------------- |
-| push.bat | Push batch file for Windows       |
-| push.sh  | Push script for Linux             |
-| push.dat | Registration token list           |
-| reg.php  | PHP script for token registration |
+| File      | Description                         |
+| --------- | ----------------------------------- |
+| oauth.php | PHP script to obtain access token   |
+| oauth.sh  | Shell script to obtain access token |
+| push.bat  | Push batch file for Windows         |
+| push.sh   | Push shell script for Linux         |
+| push.dat  | Registration token list             |
+| reg.php   | PHP script for token registration   |
 
 ### Asterisk
 

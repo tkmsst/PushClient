@@ -3,7 +3,7 @@
     "project_number": "193171544835",
     "firebase_url": "https://public-pushclient.firebaseio.com",
     "project_id": "public-pushclient",
-    "storage_bucket": "public-pushclient.appspot.com"
+    "storage_bucket": "public-pushclient.firebasestorage.app"
   },
   "client": [
     {
@@ -25,15 +25,13 @@
         }
       ],
       "services": {
-        "analytics_service": {
-          "status": 1
-        },
         "appinvite_service": {
-          "status": 1,
-          "other_platform_oauth_client": []
-        },
-        "ads_service": {
-          "status": 2
+          "other_platform_oauth_client": [
+            {
+              "client_id": "193171544835-4if9o4tjgo1ecius8fns5a5e7dr0rnqu.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

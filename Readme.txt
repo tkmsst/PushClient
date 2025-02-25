@@ -15,10 +15,12 @@
 サンプルのスクリプトおよび Asterisk 用の設定ファイルは samples ディレクトリを参照。
 
 <Script>
+oauth.php :		Access token 取得 PHP スクリプト
+oauth.sh :		Access token 取得シェルスクリプト
 push.bat :		Windows 用プッシュ発信バッチファイル
-push.sh :		Linux 用プッシュ発信スクリプト
+push.sh :		Linux 用プッシュ発信シェルスクリプト
 push.dat :		Registration token リスト
-reg.php :		Token 登録用 PHP スクリプト
+reg.php :		Token 登録 PHP スクリプト
 
 <Asterisk>
 extensions.conf :	ダイヤルプラン
