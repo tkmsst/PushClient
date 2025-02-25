@@ -104,10 +104,10 @@ public class MainActivity extends Activity {
             setParameters();
             if (myApplication.server_url.isEmpty()) {
                 textView[0].setText(getString(R.string.url_empty));
-            } else if (myApplication.regid.isEmpty()) {
+            } else if (myApplication.reg_id.isEmpty()) {
                 textView[0].setText(getString(R.string.token_removed));
             } else {
-                serverAccess.register(myApplication.server_url, myApplication.regid, false);
+                serverAccess.register(myApplication.server_url, myApplication.reg_id, false);
                 myApplication.storeRegid("");
             }
         } else if (view == findViewById(R.id.clear)) {
@@ -147,6 +147,8 @@ public class MainActivity extends Activity {
 
     private void getUiResources() {
         Resources res = getResources();
+        final int[] box_ids = {R.id.launch_app, R.id.screen_on, R.id.end_off};
+        final int[] view_ids = {R.id.result, R.id.token};
 
         editText = findViewById(R.id.server_url);
 
@@ -157,16 +159,14 @@ public class MainActivity extends Activity {
         spinner.setEnabled(myApplication.changeable);
         spinner.setAdapter(adapter);
 
-        checkBox = new CheckBox[MyApplication.MAX_FLAG];
+        checkBox = new CheckBox[box_ids.length];
         for (int i = 0; i < checkBox.length; i++) {
-            String str = String.valueOf(i + 1);
-            checkBox[i] = findViewById(res.getIdentifier("flag" + str, "id", pkg));
+            checkBox[i] = findViewById(box_ids[i]);
         }
 
-        textView = new TextView[2];
+        textView = new TextView[view_ids.length];
         for (int i = 0; i < textView.length; i++) {
-            String str = String.valueOf(i + 1);
-            textView[i] = findViewById(res.getIdentifier("view" + str, "id", pkg));
+            textView[i] = findViewById(view_ids[i]);
         }
     }
 
@@ -174,7 +174,7 @@ public class MainActivity extends Activity {
         editText.setText(myApplication.server_url);
         spinner.setSelection(channel.getImportance());
         for (int i = 0; i < checkBox.length; i++) {
-            checkBox[i].setChecked(myApplication.flag[i]);
+            checkBox[i].setChecked(myApplication.flags[i]);
         }
     }
 
@@ -187,7 +187,7 @@ public class MainActivity extends Activity {
 
         myApplication.server_url = editText.getText().toString();
         for (int i = 0; i < checkBox.length; i++) {
-            myApplication.flag[i] = checkBox[i].isChecked();
+            myApplication.flags[i] = checkBox[i].isChecked();
         }
         return myApplication.storeAll();
     }

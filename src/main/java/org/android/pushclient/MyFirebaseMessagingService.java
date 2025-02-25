@@ -8,18 +8,16 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.app.job.JobInfo;
-import android.app.job.JobScheduler;
-import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.os.PersistableBundle;
 import android.os.PowerManager;
 import android.provider.Settings;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.work.Data;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
 
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
@@ -27,14 +25,15 @@ import com.google.firebase.messaging.RemoteMessage;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.TimeUnit;
 
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
     public static final String CHANNEL_ID = "default_channel";
     private static final String TAG = "PC:MessagingService";
-    private static final int TIMEOUT_PERIOD = 10000;
+    private static final int TIMEOUT_PERIOD = 15000;
     private static final int LAUNCH_DURATION = 10000;
-    private static final int MAX_DELAY = 30000;
+    private static final int RESTORE_DELAY = 30;
     private static final int MAX_MESSAGES = 5;
 
     /*
@@ -57,19 +56,21 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         sendNotification(data);
 
         // Acquire a wake lock.
-        int pmFlag;
-        if (myApplication.flag[1]) {
-            pmFlag = PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP;
-        } else {
-            pmFlag = PowerManager.PARTIAL_WAKE_LOCK;
-        }
         PowerManager powerManager = getSystemService(PowerManager.class);
-        PowerManager.WakeLock wakeLock = powerManager.newWakeLock(pmFlag, TAG);
+        PowerManager.WakeLock wakeLock =
+                powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
         wakeLock.acquire(LAUNCH_DURATION);
+
+        // Turn screen on.
+        if (myApplication.flags[1]) {
+            Intent intent = new Intent(this, MainActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+        }
 
         // Set screen off timeout.
         int screenTimeout = 0;
-        if (myApplication.flag[2] && !powerManager.isInteractive()) {
+        if (myApplication.flags[2] && !powerManager.isInteractive()) {
             screenTimeout = Settings.System.getInt(
                     getContentResolver(), Settings.System.SCREEN_OFF_TIMEOUT, 0);
             if (screenTimeout > TIMEOUT_PERIOD) {
@@ -80,7 +81,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
         // Start the activity.
         Intent intent = getAppIntent(data.get("app"));
-        if (myApplication.flag[0] && intent != null) {
+        if (myApplication.flags[0] && intent != null) {
             intent.addFlags(
                     Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS |
                     Intent.FLAG_ACTIVITY_NO_ANIMATION |
@@ -119,8 +120,8 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         // Persist and remove token at third-party servers.
         MyApplication myApplication = (MyApplication) getApplication();
         ServerAccess serverAccess = new ServerAccess(null);
-        if (!myApplication.regid.isEmpty()) {
-            serverAccess.register(myApplication.server_url, myApplication.regid, false);
+        if (!myApplication.reg_id.isEmpty()) {
+            serverAccess.register(myApplication.server_url, myApplication.reg_id, false);
         }
         serverAccess.register(myApplication.server_url, token, true);
         myApplication.storeRegid(token);
@@ -211,15 +212,18 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
      * Schedule asynchronous work.
      */
     private void scheduleJob(int screenTimeout) {
-        JobScheduler jobScheduler = (JobScheduler) getSystemService(Context.JOB_SCHEDULER_SERVICE);
-        ComponentName componentName = new ComponentName(this, MyJobService.class);
-        PersistableBundle persistableBundle = new PersistableBundle();
-        persistableBundle.putInt("TIMEOUT", screenTimeout);
-        JobInfo jobInfo = new JobInfo.Builder(0, componentName)
-                .setExtras(persistableBundle)
-                .setOverrideDeadline(MAX_DELAY)
-                .setRequiresDeviceIdle(true)
+        Data input = new Data.Builder()
+                .putInt("TIMEOUT", screenTimeout)
                 .build();
-        jobScheduler.schedule(jobInfo);
+
+        OneTimeWorkRequest work = new OneTimeWorkRequest.Builder(MyWorker.class)
+                .setInputData(
+                        new Data.Builder()
+                                .putInt("TIMEOUT", screenTimeout)
+                                .build()
+                )
+                .setInitialDelay(RESTORE_DELAY, TimeUnit.SECONDS)
+                .build();
+        WorkManager.getInstance(this).beginWith(work).enqueue();
     }
 }

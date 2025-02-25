@@ -1,5 +1,5 @@
 /**
- * ServerAccess to register or unregister token.
+ * ServerAccess to manage the token.
  */
 
 package org.android.pushclient;
@@ -115,7 +115,7 @@ public class ServerAccess {
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        TextView textView = ((Activity) context).findViewById(R.id.view1);
+                        TextView textView = ((Activity) context).findViewById(R.id.result);
                         textView.setText(message);
                     }
                 });

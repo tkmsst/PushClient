@@ -14,12 +14,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class MyApplication extends Application {
 
-    public static final int MAX_FLAG = 3;
-
     public volatile boolean changeable;
-    public volatile String regid;
+    public volatile String reg_id;
     public volatile String server_url;
-    public volatile boolean[] flag = new boolean[MAX_FLAG];
+    public volatile boolean[] flags = {true, false, true};
 
     private SharedPreferences prefs;
     private ConcurrentLinkedDeque<String> queue;
@@ -30,13 +28,11 @@ public class MyApplication extends Application {
         super.onCreate();
 
         prefs = PreferenceManager.getDefaultSharedPreferences(createDeviceProtectedStorageContext());
-        regid = prefs.getString("regid", "");
+        reg_id = prefs.getString("regid", "");
         server_url = prefs.getString("server_url", "");
-
-        final boolean[] defaultFlag = {true, false, true};
-        for (int i = 0; i < MAX_FLAG; i++) {
+        for (int i = 0; i < flags.length; i++) {
             final String str = String.valueOf(i + 1);
-            flag[i] = prefs.getBoolean("flag" + str, defaultFlag[i]);
+            flags[i] = prefs.getBoolean("flag" + str, flags[i]);
         }
 
         queue = new ConcurrentLinkedDeque<>();
@@ -45,7 +41,7 @@ public class MyApplication extends Application {
 
     public void storeRegid(String token) {
         if (token != null) {
-            regid = token;
+            reg_id = token;
             SharedPreferences.Editor editor = prefs.edit();
             editor.putString("regid", token);
             editor.apply();
@@ -54,11 +50,11 @@ public class MyApplication extends Application {
 
     public boolean storeAll() {
         SharedPreferences.Editor editor = prefs.edit();
-        editor.putString("regid", regid);
+        editor.putString("regid", reg_id);
         editor.putString("server_url", server_url);
-        for (int i = 0; i < MAX_FLAG; i++) {
+        for (int i = 0; i < flags.length; i++) {
             final String str = String.valueOf(i + 1);
-            editor.putBoolean("flag" + str, flag[i]);
+            editor.putBoolean("flag" + str, flags[i]);
         }
         return editor.commit();
     }

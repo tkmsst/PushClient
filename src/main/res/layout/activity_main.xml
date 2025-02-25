@@ -17,7 +17,7 @@
         android:scrollHorizontally="true"
         android:singleLine="true" />
 
-    <Space
+    <View
         android:layout_width="match_parent"
         android:layout_height="24dp" />
 
@@ -41,24 +41,24 @@
 
     </LinearLayout>
 
-    <Space
+    <View
         android:layout_width="match_parent"
         android:layout_height="24dp" />
 
     <CheckBox
-        android:id="@+id/flag1"
+        android:id="@+id/launch_app"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/launch_app" />
 
     <CheckBox
-        android:id="@+id/flag2"
+        android:id="@+id/screen_on"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/screen_on" />
 
     <CheckBox
-        android:id="@+id/flag3"
+        android:id="@+id/end_off"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/end_off" />
@@ -107,7 +107,7 @@
     </LinearLayout>
 
     <TextView
-        android:id="@+id/view1"
+        android:id="@+id/result"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textColor="@color/message" />
@@ -125,7 +125,7 @@
         android:textStyle="bold|italic" />
 
     <TextView
-        android:id="@+id/view2"
+        android:id="@+id/token"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:selectAllOnFocus="true"
