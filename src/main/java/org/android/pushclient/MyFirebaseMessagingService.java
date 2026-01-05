@@ -120,11 +120,12 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         // Persist and remove token at third-party servers.
         MyApplication myApplication = (MyApplication) getApplication();
         ServerAccess serverAccess = new ServerAccess(null);
-        if (!myApplication.reg_id.isEmpty()) {
-            serverAccess.register(myApplication.server_url, myApplication.reg_id, false);
+        if (!myApplication.registration_id.isEmpty()) {
+            serverAccess.register(
+                    myApplication.server_url, myApplication.registration_id, false);
         }
         serverAccess.register(myApplication.server_url, token, true);
-        myApplication.storeRegid(token);
+        myApplication.storeRegistrationId(token);
     }
 
     /**
@@ -172,8 +173,8 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         // Set a PendingIntent.
         Intent intent = getAppIntent(data.get("app"));
         if (intent != null) {
-            notificationBuilder.setContentIntent(PendingIntent.getActivity(this, 0,
-                    intent, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT));
+            notificationBuilder.setFullScreenIntent(PendingIntent.getActivity(this, 0,
+                    intent, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT), true);
         }
 
         // Notify.
@@ -212,10 +213,6 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
      * Schedule asynchronous work.
      */
     private void scheduleJob(int screenTimeout) {
-        Data input = new Data.Builder()
-                .putInt("TIMEOUT", screenTimeout)
-                .build();
-
         OneTimeWorkRequest work = new OneTimeWorkRequest.Builder(MyWorker.class)
                 .setInputData(
                         new Data.Builder()

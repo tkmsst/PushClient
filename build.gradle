@@ -24,10 +24,10 @@ android {
 
     defaultConfig {
         applicationId 'org.android.pushclient'
-        minSdk 34
+        minSdk 35
         targetSdk 36
-        versionCode 7
-        versionName "1.07"
+        versionCode 8
+        versionName "1.08"
     }
 
     buildTypes {

@@ -36,14 +36,14 @@ public class ServerAccess {
         context = ct;
     }
 
-    public void register(String server_url, String token, boolean reg) {
+    public void register(String server_url, String token, boolean register) {
         if (server_url == null || token == null) {
             return;
         } else if (server_url.isEmpty() || token.isEmpty()) {
             return;
         }
         String body;
-        if (reg) {
+        if (register) {
             body = "register=";
         } else {
             body = "unregister=";
@@ -53,74 +53,74 @@ public class ServerAccess {
     }
 
     private void asyncPost(final String server_url, final String body) {
-        final ExecutorService executor = Executors.newSingleThreadExecutor();
-        final Handler handler = new Handler(Looper.getMainLooper());
+        try (final ExecutorService executor = Executors.newSingleThreadExecutor()) {
+            executor.execute(new Runnable() {
+                private String message;
 
-        executor.execute(new Runnable() {
-            private String message;
-
-            @Override
-            public void run() {
-                URL url;
-                try {
-                    url = new URL(server_url);
-                } catch (MalformedURLException e) {
-                    message = "Invalid URL: " + server_url;
-                    url = null;
-                }
-
-                if (url != null) {
-                    disableSSLCertificateChecking();
-                    HttpURLConnection con = null;
+                @Override
+                public void run() {
+                    URL url;
                     try {
-                        byte[] bodyByte = body.getBytes();
-                        con = (HttpURLConnection) url.openConnection();
-                        con.setDoInput(true);
-                        con.setDoOutput(true);
-                        con.setUseCaches(false);
-                        con.setFixedLengthStreamingMode(bodyByte.length);
-                        con.setRequestMethod("POST");
-                        // Post the request.
-                        OutputStream out = con.getOutputStream();
-                        out.write(bodyByte);
-                        out.flush();
-                        out.close();
-                        // Handle the response.
-                        final int status = con.getResponseCode();
-                        if (status == HttpURLConnection.HTTP_OK) {
-                            InputStream in = con.getInputStream();
-                            byte[] response = new byte[1024];
-                            if (in.read(response) > 0) {
-                                message = new String(response, StandardCharsets.UTF_8);
-                            } else {
-                                message = "No response from the server.";
-                            }
-                            in.close();
-                        } else {
-                            message = "The server responded with an error: " + status;
-                        }
-                    } catch (IOException e) {
-                        message = "Failed to connect to the server.";
-                    } finally {
-                        if (con != null) {
-                            con.disconnect();
-                        }
+                        url = new URL(server_url);
+                    } catch (MalformedURLException e) {
+                        message = "Invalid URL: " + server_url;
+                        url = null;
                     }
-                }
-                if (context == null) {
-                    return;
-                }
 
-                // Show the message on the activity's UI.
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        TextView textView = ((Activity) context).findViewById(R.id.result);
-                        textView.setText(message);
+                    if (url != null) {
+                        disableSSLCertificateChecking();
+                        HttpURLConnection con = null;
+                        try {
+                            byte[] bodyByte = body.getBytes();
+                            con = (HttpURLConnection) url.openConnection();
+                            con.setDoInput(true);
+                            con.setDoOutput(true);
+                            con.setUseCaches(false);
+                            con.setFixedLengthStreamingMode(bodyByte.length);
+                            con.setRequestMethod("POST");
+                            // Post the request.
+                            OutputStream out = con.getOutputStream();
+                            out.write(bodyByte);
+                            out.flush();
+                            out.close();
+                            // Handle the response.
+                            final int status = con.getResponseCode();
+                            if (status == HttpURLConnection.HTTP_OK) {
+                                InputStream in = con.getInputStream();
+                                byte[] response = new byte[1024];
+                                if (in.read(response) > 0) {
+                                    message = new String(response, StandardCharsets.UTF_8);
+                                } else {
+                                    message = "No response from the server.";
+                                }
+                                in.close();
+                            } else {
+                                message = "The server responded with an error: " + status;
+                            }
+                        } catch (IOException e) {
+                            message = "Failed to connect to the server.";
+                        } finally {
+                            if (con != null) {
+                                con.disconnect();
+                            }
+                        }
                     }
-                });
-            }
-        });
+                    if (context == null) {
+                        return;
+                    }
+
+                    // Show the message on the activity's UI.
+                    final Handler handler = new Handler(Looper.getMainLooper());
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            TextView textView = ((Activity) context).findViewById(R.id.result);
+                            textView.setText(message);
+                        }
+                    });
+                }
+            });
+        }
     }
 
     private void disableSSLCertificateChecking() {

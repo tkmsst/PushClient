@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class MyApplication extends Application {
 
     public volatile boolean changeable;
-    public volatile String reg_id;
+    public volatile String registration_id;
     public volatile String server_url;
     public volatile boolean[] flags = {true, false, true};
 
@@ -28,7 +28,7 @@ public class MyApplication extends Application {
         super.onCreate();
 
         prefs = PreferenceManager.getDefaultSharedPreferences(createDeviceProtectedStorageContext());
-        reg_id = prefs.getString("regid", "");
+        registration_id = prefs.getString("registration_id", "");
         server_url = prefs.getString("server_url", "");
         for (int i = 0; i < flags.length; i++) {
             final String str = String.valueOf(i + 1);
@@ -39,18 +39,18 @@ public class MyApplication extends Application {
         counter = new AtomicInteger(0);
     }
 
-    public void storeRegid(String token) {
+    public void storeRegistrationId(String token) {
         if (token != null) {
-            reg_id = token;
+            registration_id = token;
             SharedPreferences.Editor editor = prefs.edit();
-            editor.putString("regid", token);
+            editor.putString("registration_id", token);
             editor.apply();
         }
     }
 
     public boolean storeAll() {
         SharedPreferences.Editor editor = prefs.edit();
-        editor.putString("regid", reg_id);
+        editor.putString("registration_id", registration_id);
         editor.putString("server_url", server_url);
         for (int i = 0; i < flags.length; i++) {
             final String str = String.valueOf(i + 1);

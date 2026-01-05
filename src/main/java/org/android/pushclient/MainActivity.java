@@ -10,9 +10,7 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.res.Resources;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.provider.Settings;
@@ -25,7 +23,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -87,13 +85,14 @@ public class MainActivity extends Activity {
                             if (task.isSuccessful()) {
                                 // Get the Instance ID token.
                                 final String token = task.getResult();
-                                myApplication.storeRegid(token);
+                                myApplication.storeRegistrationId(token);
                                 textView[1].setText(token);
                                 // Send the token to the server.
                                 if (myApplication.server_url.isEmpty()) {
                                     textView[0].setText(getString(R.string.url_empty));
                                 } else {
-                                    serverAccess.register(myApplication.server_url, token, true);
+                                    serverAccess.register(
+                                            myApplication.server_url, token, true);
                                 }
                             } else {
                                 textView[0].setText(getString(R.string.no_token));
@@ -104,11 +103,12 @@ public class MainActivity extends Activity {
             setParameters();
             if (myApplication.server_url.isEmpty()) {
                 textView[0].setText(getString(R.string.url_empty));
-            } else if (myApplication.reg_id.isEmpty()) {
+            } else if (myApplication.registration_id.isEmpty()) {
                 textView[0].setText(getString(R.string.token_removed));
             } else {
-                serverAccess.register(myApplication.server_url, myApplication.reg_id, false);
-                myApplication.storeRegid("");
+                serverAccess.register(
+                        myApplication.server_url, myApplication.registration_id, false);
+                myApplication.storeRegistrationId("");
             }
         } else if (view == findViewById(R.id.clear)) {
             for (TextView t : textView) {
@@ -118,15 +118,20 @@ public class MainActivity extends Activity {
     }
 
     private void setSystemPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ActivityCompat.checkSelfPermission(this,
-                    Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.POST_NOTIFICATIONS}, 0);
-            }
+        Uri pkg_uri = Uri.parse("package:" + pkg);
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(
+                        new String[] { Manifest.permission.POST_NOTIFICATIONS }, 0);
         }
 
-        Uri pkg_uri = Uri.parse("package:" + pkg);
+        NotificationManager notificationManager = getSystemService(NotificationManager.class);
+        if (!notificationManager.canUseFullScreenIntent()) {
+            Intent intent = new Intent(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT, pkg_uri);
+            startActivity(intent);
+        }
+
         PowerManager powerManager = getSystemService(PowerManager.class);
         if (!powerManager.isIgnoringBatteryOptimizations(pkg)) {
             Intent intent = new Intent(
@@ -146,7 +151,6 @@ public class MainActivity extends Activity {
     }
 
     private void getUiResources() {
-        Resources res = getResources();
         final int[] box_ids = {R.id.launch_app, R.id.screen_on, R.id.end_off};
         final int[] view_ids = {R.id.result, R.id.token};
 
